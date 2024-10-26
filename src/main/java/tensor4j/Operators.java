@@ -148,7 +148,7 @@ public class Operators {
     public static Tensor neg(Tensor t) {
         double[] values = new double[t.length];
         for (int i = 0; i < t.length; i++) {
-            t.values[i] = -t.values[i];
+            values[i] = -t.values[i];
         }
         return new Tensor(values, t.shape);
     }
