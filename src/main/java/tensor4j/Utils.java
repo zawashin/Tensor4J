@@ -23,11 +23,11 @@ public class Utils {
     protected static final String ERROR_SHAPE = ERROR_MESSAGE[Tensor.RANK_MAX + 3];
     protected static final String NOT_IMPLEMENTED = ERROR_MESSAGE[Tensor.RANK_MAX + 4];
 
-    public static Tensor createTensor(int... shape) {
-        return createTensor(0.0, shape);
+    public static Tensor create(int... shape) {
+        return create(0.0, shape);
     }
 
-    public static Tensor createTensor(double value, int[] shape) {
+    public static Tensor create(double value, int[] shape) {
         int[] shape_;
         if (shape.length < Tensor.RANK_MAX) {
             shape_ = new int[Tensor.RANK_MAX];

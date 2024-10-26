@@ -220,7 +220,7 @@ public class Operators {
                 tr = t.clone();
                 break;
             case 2:
-                tr = Utils.createTensor(t.shape[1], t.shape[0], 1, 1);
+                tr = Utils.create(t.shape[1], t.shape[0], 1, 1);
                 //tr.values = new double[t.length];
                 for (int i = 0; i < t.shape[0]; i++) {
                     for (int j = 0; j < t.shape[1]; j++) {
@@ -229,7 +229,7 @@ public class Operators {
                 }
                 break;
             case 3:
-                tr = Utils.createTensor(t.shape[2], t.shape[1], t.shape[0], 1);
+                tr = Utils.create(t.shape[2], t.shape[1], t.shape[0], 1);
                 tr.values = new double[t.length];
                 for (int i = 0; i < t.shape[0]; i++) {
                     for (int j = 0; j < t.shape[1]; j++) {
@@ -240,7 +240,7 @@ public class Operators {
                 }
                 break;
             case 4:
-                tr = Utils.createTensor(t.shape[3], t.shape[2], t.shape[1], t.shape[0]);
+                tr = Utils.create(t.shape[3], t.shape[2], t.shape[1], t.shape[0]);
                 tr.values = new double[t.length];
                 for (int i = 0; i < t.shape[0]; i++) {
                     for (int j = 0; j < t.shape[1]; j++) {
