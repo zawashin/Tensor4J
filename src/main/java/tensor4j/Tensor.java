@@ -326,6 +326,13 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.mse(this, t);
     }
 
+    public Tensor to2ndOrder() {
+        if(rank == 1) {
+            return Utils.to2ndOrder(this);
+        } else {
+            throw new RuntimeException(Utils.ERROR_RANK);
+        }
+    }
     /*
      * 2階のテンソルまでにしたので不要
      */

@@ -78,6 +78,15 @@ public class Utils {
         return createRandomTensor(valueMax - valueMin, shape);
     }
 
+    public static Tensor to2ndOrder(Tensor t) {
+        if(t.rank == 1) {
+            int[] shape = new int[]{t.getShape(1), t.getShape(0), t.getShape(2), t.getShape(3)};
+            double[][] values = new double[][]{t.getValues()};
+            return new Tensor(values);
+        } else {
+            throw new RuntimeException(Utils.ERROR_RANK);
+        }
+    }
     /*
      * 2階のテンソルまでにしたので不要
      */
