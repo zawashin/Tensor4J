@@ -1,6 +1,7 @@
 package tensor4j;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
@@ -87,30 +88,66 @@ public class Tensor implements Cloneable, Serializable {
         this.shape = new int[RANK_MAX];
         switch (shape.length) {
             case 0:
+                rank = 0;
                 this.shape[0] = 1;
                 this.shape[1] = 1;
                 this.shape[2] = 1;
                 this.shape[3] = 1;
                 break;
             case 1:
+                if (shape[0] != 1) {
+                    rank = 1;
+                } else {
+                    rank = 0;
+                }
                 this.shape[0] = shape[0];
                 this.shape[1] = 1;
                 this.shape[2] = 1;
                 this.shape[3] = 1;
                 break;
             case 2:
+                if (shape[0] == 1 && shape[1] == 1) {
+                    rank = 0;
+                } else {
+                    rank = 2;
+                }
                 this.shape[0] = shape[0];
                 this.shape[1] = shape[1];
                 this.shape[2] = 1;
                 this.shape[3] = 1;
                 break;
             case 3:
+                if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1) {
+                    rank = 3;
+                } else if (shape[0] != 1 && shape[1] != 1) {
+                    rank = 2;
+                } else if (shape[0] != 1) {
+                    rank = 1;
+                } else {
+                    rank = 0;
+                }
                 this.shape[0] = shape[0];
                 this.shape[1] = shape[1];
                 this.shape[2] = shape[2];
                 this.shape[3] = 1;
                 break;
             case 4:
+                if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1 && shape[3] != 1) {
+                    rank = 4;
+                } else if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1) {
+                    rank = 3;
+                } else if (shape[0] != 1 && shape[1] != 1) {
+                    rank = 2;
+                } else if (shape[0] != 1) {
+                   rank = 1;
+                } else {
+                    if (shape[1] == 1 && shape[2] == 1 && shape[3] == 1) {
+                        rank = 0;
+                    } else {
+                        System.err.println(Utils.ERROR_SHAPE + ":" + Arrays.toString(shape));
+                        throw new RuntimeException(Utils.ERROR_SHAPE);
+                    }
+                }
                 this.shape[0] = shape[0];
                 this.shape[1] = shape[1];
                 this.shape[2] = shape[2];
@@ -327,12 +364,13 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor to2ndOrder() {
-        if(rank == 1) {
+        if (rank == 1) {
             return Utils.to2ndOrder(this);
         } else {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
     }
+
     /*
      * 2階のテンソルまでにしたので不要
      */

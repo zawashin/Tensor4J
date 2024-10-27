@@ -49,11 +49,11 @@ public class Utils {
         return new Tensor(values, shape_);
     }
 
-    public static Tensor createRandomTensor(int[] shape) {
-        return createRandomTensor(1.0, shape);
+    public static Tensor createRandom(int[] shape) {
+        return createRandom(1.0, shape);
     }
 
-    public static Tensor createRandomTensor(double value, int[] shape) {
+    public static Tensor createRandom(double value, int[] shape) {
         int[] shape_;
         if (shape.length < Tensor.RANK_MAX) {
             shape_ = new int[Tensor.RANK_MAX];
@@ -74,8 +74,8 @@ public class Utils {
         return new Tensor(values, shape_);
     }
 
-    public static Tensor createRandomTensor(double valueMax, double valueMin, int... shape) {
-        return createRandomTensor(valueMax - valueMin, shape);
+    public static Tensor createRandom(double valueMax, double valueMin, int... shape) {
+        return createRandom(valueMax - valueMin, shape);
     }
 
     public static Tensor to2ndOrder(Tensor t) {
