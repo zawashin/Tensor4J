@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>zawashin</groupId>
-    <artifactId>Tensor4J</artifactId>
+    <artifactId>tensor4J</artifactId>
     <version>0.5</version>
 
     <properties>
