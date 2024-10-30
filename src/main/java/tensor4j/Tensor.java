@@ -139,7 +139,7 @@ public class Tensor implements Cloneable, Serializable {
                 } else if (shape[0] != 1 && shape[1] != 1) {
                     rank = 2;
                 } else if (shape[0] != 1) {
-                   rank = 1;
+                    rank = 1;
                 } else {
                     if (shape[1] == 1 && shape[2] == 1 && shape[3] == 1) {
                         rank = 0;
@@ -215,6 +215,10 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.getValue(this);
     }
 
+    public void setValue(double value) {
+        Utils.setValue(this, value);
+    }
+
     public double getValue(int i) {
         return Utils.getValue(this, i);
     }
@@ -229,10 +233,6 @@ public class Tensor implements Cloneable, Serializable {
 
     public double getValue(int i, int j, int k, int l) {
         return Utils.getValue(this, i, j, k, l);
-    }
-
-    public void setValue(double value) {
-        Utils.setValue(this, value);
     }
 
     public void setValue(int i, double value) {

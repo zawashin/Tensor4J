@@ -32,9 +32,7 @@ public class Utils {
         if (shape.length < Tensor.RANK_MAX) {
             shape_ = new int[Tensor.RANK_MAX];
             Arrays.fill(shape_, 1);
-            for (int i = 0; i < shape.length; i++) {
-                shape_[i] = shape[i];
-            }
+            System.arraycopy(shape, 0, shape_, 0, shape.length);
         } else {
             shape_ = shape;
         }
@@ -79,7 +77,7 @@ public class Utils {
     }
 
     public static Tensor to2ndOrder(Tensor t) {
-        if(t.rank == 1) {
+        if (t.rank == 1) {
             int[] shape = new int[]{t.getShape(1), t.getShape(0), t.getShape(2), t.getShape(3)};
             double[][] values = new double[][]{t.getValues()};
             return new Tensor(values);
@@ -87,6 +85,7 @@ public class Utils {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
     }
+
     /*
      * 2階のテンソルまでにしたので不要
      */
@@ -131,6 +130,7 @@ public class Utils {
         }
         return new Tensor(values, shape);
     }
+
     public static Tensor sum(Tensor x, int axis) {
         int length;
         int[] sumShape = new int[Tensor.RANK_MAX];
