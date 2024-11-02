@@ -7,7 +7,7 @@ import java.util.Random;
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
  */
 public class Utils {
-    protected static final String[] ERROR_MESSAGE = new String[]{
+    public static final String[] ERROR_MESSAGE = new String[]{
             "Tensor Order is not 0th.",
             "Tensor Order is not 1st.",
             "Tensor Order is not 2nd.",
@@ -18,10 +18,10 @@ public class Utils {
             "Tensor shape is not match",
             "Stub: Not implemented yet"
     };
-    protected static final String ERROR_RANK = ERROR_MESSAGE[Tensor.RANK_MAX + 1];
-    protected static final String ERROR_LENGTH = ERROR_MESSAGE[Tensor.RANK_MAX + 2];
-    protected static final String ERROR_SHAPE = ERROR_MESSAGE[Tensor.RANK_MAX + 3];
-    protected static final String NOT_IMPLEMENTED = ERROR_MESSAGE[Tensor.RANK_MAX + 4];
+    public static final String ERROR_RANK = ERROR_MESSAGE[Tensor.RANK_MAX + 1];
+    public static final String ERROR_LENGTH = ERROR_MESSAGE[Tensor.RANK_MAX + 2];
+    public static final String ERROR_SHAPE = ERROR_MESSAGE[Tensor.RANK_MAX + 3];
+    public static final String NOT_IMPLEMENTED = ERROR_MESSAGE[Tensor.RANK_MAX + 4];
 
     public static Tensor create(int... shape) {
         return create(0.0, shape);
@@ -90,16 +90,11 @@ public class Utils {
      * 2階のテンソルまでにしたので不要
      */
     // Stub
-    public static Tensor reshapeSumBackward(Tensor gy, int[] shape, int axis) {
-        if (gy != null) {
+    public static Tensor reshapeSumBackward(Tensor gy, int[] shape, int axis, boolean keepDims) {
+        if (gy == null) {
             throw new RuntimeException(Utils.NOT_IMPLEMENTED);
         }
-        Tensor x = gy.clone();
-        return new Tensor(x);
-    }
-
-    public static Tensor sum(Tensor x) {
-        return sum(x, 2);
+        return gy.clone();
     }
 
     public static Tensor reshape(Tensor t, int[] shape) {
@@ -131,58 +126,71 @@ public class Utils {
         return new Tensor(values, shape);
     }
 
-    public static Tensor sum(Tensor x, int axis) {
-        int length;
+    public static Tensor sum(Tensor t) {
+        return sum(t, -1);
+    }
+
+    public static Tensor sum(Tensor t, int axis, boolean keepdims) {
+        return sum(t, -1);
+    }
+
+    public static Tensor sum(Tensor t, int axis) {
+        if (t.getRank() > 2) {
+            throw new RuntimeException(Utils.ERROR_RANK);
+        }
         int[] sumShape = new int[Tensor.RANK_MAX];
-        if (axis == Tensor.RANK_MAX) {
+        if (axis < 0 || t.getRank() < 2) {
+            // 総和 axis < 0
+            // スカラ・ベクトルは一意にスカラ
             Arrays.fill(sumShape, 1);
         } else if (axis == 0) {
-            sumShape[0] = 1;
-            sumShape[1] = x.getShape()[1];
+            sumShape[0] = t.getShape()[1];
+            sumShape[1] = 1;
             sumShape[2] = 1;
             sumShape[3] = 1;
         } else if (axis == 1) {
-            sumShape[0] = x.getShape()[0];
+            sumShape[0] = t.getShape()[0];
             sumShape[1] = 1;
             sumShape[2] = 1;
             sumShape[3] = 1;
         }
+        int length;
         length = sumShape[0];
-        for (int i = 1; i < x.length; i++) {
+        for (int i = 1; i < t.length; i++) {
             length *= sumShape[i];
         }
         double[] values = new double[length];
-        if (axis == Tensor.RANK_MAX) {
-            for (int j = 0; j < x.shape[1]; j++) {
-                for (int i = 0; i < x.shape[0]; i++) {
-                    values[0] += Utils.getValue(x, i, j);
+        if (axis < 0 || t.getRank() < 2) {
+            for (int i = 0; i < t.getLength(); i++) {
+                values[0] += t.getValues()[i];
+            }
+        } else if (t.rank == 2 && axis == 0) {
+            for (int i = 0; i < t.shape[0]; i++) {
+                for (int j = 0; j < t.shape[1]; j++) {
+                    values[j] += Utils.getValue(t, i, j);
                 }
             }
-        } else if (axis == 0) {
-            for (int j = 0; j < x.shape[1]; j++) {
-                for (int i = 0; i < x.shape[0]; i++) {
-                    values[j] += Utils.getValue(x, i, j);
+        } else if (t.rank == 2 && axis == 1) {
+            for (int i = 0; i < t.shape[0]; i++) {
+                for (int j = 0; j < t.shape[1]; j++) {
+                    values[i] += Utils.getValue(t, i, j);
                 }
             }
-        } else if (axis == 1) {
-            for (int j = 0; j < x.shape[1]; j++) {
-                for (int i = 0; i < x.shape[0]; i++) {
-                    values[i] += Utils.getValue(x, i, j);
-                }
-            }
+        } else {
+
         }
         return new Tensor(values, sumShape);
     }
 
     // ChatGPTで修正
-    public static Tensor broadcastTo(Tensor x, int[] shape) {
+    public static Tensor broadcastTo(Tensor t, int[] shape) {
         int length = shape[0];
         for (int i = 1; i < shape.length; i++) {
             length *= shape[i];
         }
         double[] values = new double[length];
         int n = 0;
-        int[] xShape = x.getShape();
+        int[] xShape = t.getShape();
         int xShape0 = xShape[0];
         int xShape1 = xShape[1];
         int shape0 = shape[0];
@@ -192,26 +200,26 @@ public class Utils {
             for (int i = 0; i < shape0; i++) {
                 int rowIndex = (xShape0 == 1 || xShape0 == shape0) ? Math.min(i, xShape0 - 1) : i % xShape0;
                 int colIndex = (xShape1 == 1 || xShape1 == shape1) ? Math.min(j, xShape1 - 1) : j % xShape1;
-                values[n++] = x.getValue(rowIndex, colIndex);
+                values[n++] = t.getValue(rowIndex, colIndex);
             }
         }
         return new Tensor(values, shape);
     }
 
     // ChatGPTで修正
-    public static Tensor sumTo(Tensor x, int[] shape) {
+    public static Tensor sumTo(Tensor t, int[] shape) {
         double[] values = new double[shape[0] * shape[1]];
-        int[] xShape = x.getShape();
+        int[] xShape = t.getShape();
         int xShape0 = xShape[0];
         int xShape1 = xShape[1];
         int shape0 = shape[0];
         int shape1 = shape[1];
 
-        for (int i = 0; i < xShape0; i++) {
-            for (int j = 0; j < xShape1; j++) {
-                int rowIndex = (shape0 == 1 || shape0 == xShape0) ? Math.min(i, shape0 - 1) : i % shape0;
+        for (int i = 0; i < xShape[0]; i++) {
+            for (int j = 0; j < xShape[0]; j++) {
+                int rowIndex = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
                 int colIndex = (shape1 == 1 || shape1 == xShape1) ? Math.min(j, shape1 - 1) : j % shape1;
-                values[rowIndex * shape1 + colIndex] += x.getValue(i, j);
+                values[rowIndex * shape1 + colIndex] += t.getValue(i, j);
             }
         }
         return new Tensor(values, shape);
@@ -449,5 +457,6 @@ public class Utils {
         }
         t.values[i * t.jklMax + j * t.klMax + k * t.shape[3] + l] = value;
     }
+
 
 }

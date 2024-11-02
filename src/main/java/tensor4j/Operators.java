@@ -210,13 +210,15 @@ public class Operators {
     }
 
 
-    public static Tensor transpose(Tensor t) {
+    public static Tensor transpose(Tensor t, int... axes) {
         int[] shape = new int[Tensor.RANK_MAX];
         Arrays.fill(shape, 1);
         Tensor tr = null;
         switch (t.rank) {
             case 0:
             case 1:
+                // 数学的には存在しない
+                // NumPyに合わせてcloneを返す
                 tr = t.clone();
                 break;
             case 2:
@@ -229,31 +231,9 @@ public class Operators {
                 }
                 break;
             case 3:
-                tr = Utils.create(t.shape[2], t.shape[1], t.shape[0], 1);
-                tr.values = new double[t.length];
-                for (int i = 0; i < t.shape[0]; i++) {
-                    for (int j = 0; j < t.shape[1]; j++) {
-                        for (int k = 0; k < t.shape[2]; k++) {
-                            tr.setValue(k, j, i, t.getValue(i, j, k));
-                        }
-                    }
-                }
-                break;
             case 4:
-                tr = Utils.create(t.shape[3], t.shape[2], t.shape[1], t.shape[0]);
-                tr.values = new double[t.length];
-                for (int i = 0; i < t.shape[0]; i++) {
-                    for (int j = 0; j < t.shape[1]; j++) {
-                        for (int k = 0; k < t.shape[2]; k++) {
-                            for (int l = 0; l < t.shape[3]; l++) {
-                                tr.setValue(l, k, j, i, t.getValue(i, j, k, l));
-                            }
-                        }
-                    }
-                }
-                break;
             default:
-                throw new RuntimeException(Utils.ERROR_RANK);
+                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
         }
         return tr;
     }

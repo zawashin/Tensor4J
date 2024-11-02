@@ -68,6 +68,7 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(Tensor other) {
         rank = other.rank;
+        shape = new int[RANK_MAX];
         shape[0] = other.shape[0];
         shape[1] = other.shape[1];
         shape[2] = other.shape[2];
@@ -388,14 +389,14 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor sum() {
-        return Utils.sum(this, 2);
+        return Utils.sum(this, -1, true);
     }
 
-    public Tensor sum(Tensor x, int axis) {
-        return Utils.sum(this, axis);
+    public Tensor sum(int axis, boolean keepidm) {
+        return Utils.sum(this, axis, true);
     }
 
-    public Tensor broadcastTo(Tensor x, int[] shape) {
+    public Tensor broadcastTo(int[] shape) {
         return Utils.broadcastTo(this, shape);
     }
 
