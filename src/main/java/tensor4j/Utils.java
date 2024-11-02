@@ -97,7 +97,7 @@ public class Utils {
         return gy.clone();
     }
 
-    public static Tensor reshape(Tensor t, int[] shape) {
+    public static Tensor reshape(Tensor t, int... shape) {
         int length = shape[0];
         for (int i = 1; i < shape.length; i++) {
             length *= shape[i];
@@ -110,7 +110,6 @@ public class Utils {
             case 0:
                 return t.clone();
             case 1:
-                values = t.values.clone();
             case 2:
                 int n = 0;
                 for (int i = 0; i < shape[0]; i++) {
@@ -122,6 +121,7 @@ public class Utils {
             case 3:
             case 4:
             default:
+                //return create(shape).vake;
         }
         return new Tensor(values, shape);
     }
