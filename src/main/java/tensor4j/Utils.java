@@ -111,7 +111,8 @@ public class Utils {
             case 3:
             case 4:
                 if (axes.length != 2) {
-                    throw new RuntimeException();
+                    System.err.println("# of Axes must be 0 or 2");
+                    throw new RuntimeException("# of Axes must be 0 or 2");
                 }
             default:
                 throw new RuntimeException(Utils.NOT_IMPLEMENTED);
