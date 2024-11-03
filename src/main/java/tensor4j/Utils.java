@@ -86,6 +86,39 @@ public class Utils {
         }
     }
 
+    public static Tensor transpose(Tensor t, int... axes) {
+        int[] shape = new int[Tensor.RANK_MAX];
+        Arrays.fill(shape, 1);
+        Tensor tr = null;
+        switch (t.rank) {
+            case 0:
+            case 1:
+                // 数学的には存在しない
+                // NumPyに合わせてcloneを返す
+                tr = t.clone();
+                break;
+            case 2:
+                if (axes.length != 0) {
+                    throw new RuntimeException();
+                }
+                tr = Utils.create(t.shape[1], t.shape[0], 1, 1);
+                for (int i = 0; i < t.shape[0]; i++) {
+                    for (int j = 0; j < t.shape[1]; j++) {
+                        tr.setValue(j, i, t.getValue(i, j));
+                    }
+                }
+                break;
+            case 3:
+            case 4:
+                if (axes.length != 2) {
+                    throw new RuntimeException();
+                }
+            default:
+                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+        }
+        return tr;
+    }
+
     /*
      * 2階のテンソルまでにしたので不要
      */
@@ -105,25 +138,9 @@ public class Utils {
         if (t.length != length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
-        double[] values = new double[length];
-        switch (t.rank) {
-            case 0:
-                return t.clone();
-            case 1:
-            case 2:
-                int n = 0;
-                for (int i = 0; i < shape[0]; i++) {
-                    for (int j = 0; j < shape[1]; j++) {
-                        values[i * t.jklMax * j * t.klMax] = t.getValues()[n++];
-                    }
-                }
-                break;
-            case 3:
-            case 4:
-            default:
-                //return create(shape).vake;
-        }
-        return new Tensor(values, shape);
+        Tensor trs = new Tensor(shape);
+        trs.values = t.values.clone();
+        return trs;
     }
 
     public static Tensor sum(Tensor t) {
@@ -457,6 +474,5 @@ public class Utils {
         }
         t.values[i * t.jklMax + j * t.klMax + k * t.shape[3] + l] = value;
     }
-
 
 }

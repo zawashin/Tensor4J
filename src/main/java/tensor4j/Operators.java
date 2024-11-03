@@ -209,35 +209,6 @@ public class Operators {
         return new Tensor(values, t.shape);
     }
 
-
-    public static Tensor transpose(Tensor t, int... axes) {
-        int[] shape = new int[Tensor.RANK_MAX];
-        Arrays.fill(shape, 1);
-        Tensor tr = null;
-        switch (t.rank) {
-            case 0:
-            case 1:
-                // 数学的には存在しない
-                // NumPyに合わせてcloneを返す
-                tr = t.clone();
-                break;
-            case 2:
-                tr = Utils.create(t.shape[1], t.shape[0], 1, 1);
-                //tr.values = new double[t.length];
-                for (int i = 0; i < t.shape[0]; i++) {
-                    for (int j = 0; j < t.shape[1]; j++) {
-                        tr.setValue(j, i, t.getValue(i, j));
-                    }
-                }
-                break;
-            case 3:
-            case 4:
-            default:
-                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
-        }
-        return tr;
-    }
-
     public static Tensor dot(Tensor t0, Tensor t1) {
         int[] shape = null;
         int length;

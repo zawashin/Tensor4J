@@ -168,6 +168,10 @@ public class Tensor implements Cloneable, Serializable {
         return rank;
     }
 
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
     public int getLength() {
         return length;
     }
@@ -353,7 +357,7 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor transpose() {
-        return Operators.transpose(this);
+        return Utils.transpose(this);
     }
 
     public Tensor dot(Tensor t) {
