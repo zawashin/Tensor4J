@@ -216,6 +216,26 @@ public class Tensor implements Cloneable, Serializable {
         return clone;
     }
 
+    protected int calcRank(int... shape) {
+        for (int i = 0; i < shape.length; i++) {
+            if (shape[i] < 1) {
+                throw new RuntimeException(Utils.ERROR_SHAPE);
+            }
+        }
+
+        int numOf1 = 4;
+        boolean[] not1 = new boolean[RANK_MAX];
+        Arrays.fill(not1, false);
+        for (int i = 0; i < shape.length; i++) {
+            if (shape[i] != 1) {
+                numOf1 -= 1;
+                not1[i] = true;
+            }
+        }
+
+        return RANK_MAX - numOf1;
+    }
+
     public double getValue() {
         return Utils.getValue(this);
     }
@@ -358,6 +378,10 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor transpose() {
         return Utils.transpose(this);
+    }
+
+    public Tensor transpose(int... axes) {
+        return Utils.transpose(this, axes);
     }
 
     public Tensor dot(Tensor t) {
