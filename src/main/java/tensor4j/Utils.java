@@ -476,15 +476,15 @@ public class Utils {
         Arrays.fill(shape_, 1);
         System.arraycopy(shape, 0, shape_, 0, shape.length);
         List<Integer> list = new ArrayList<>();
-        for(int i = 0; i < Tensor.RANK_MAX; i++) {
-            if(shape_[i] != 1) {
+        for (int i = 0; i < Tensor.RANK_MAX; i++) {
+            if (shape_[i] != 1) {
                 list.add(shape_[i]);
             }
         }
-        if(list.size() == Tensor.RANK_MAX) {
+        if (list.size() == Tensor.RANK_MAX) {
             return shape;
         }
-        while(list.size() < Tensor.RANK_MAX) {
+        while (list.size() < Tensor.RANK_MAX) {
             list.add(1);
         }
         return list.stream().mapToInt(Integer::intValue).toArray();
@@ -492,7 +492,7 @@ public class Utils {
 
     public static int calcRank(int... shape) {
         int[] shape_;
-        if(shape.length != Tensor.RANK_MAX) {
+        if (shape.length != Tensor.RANK_MAX) {
             shape_ = new int[Tensor.RANK_MAX];
             Arrays.fill(shape_, 1);
             System.arraycopy(shape, 0, shape_, 0, shape.length);
@@ -500,8 +500,8 @@ public class Utils {
             shape_ = shape;
         }
         int numOf1 = 0;
-        for(int i = 0; i < Tensor.RANK_MAX; i++) {
-            if(shape_[i] == 1) {
+        for (int i = 0; i < Tensor.RANK_MAX; i++) {
+            if (shape_[i] == 1) {
                 numOf1++;
             }
         }
