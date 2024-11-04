@@ -1,6 +1,8 @@
 package tensor4j;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -28,14 +30,7 @@ public class Utils {
     }
 
     public static Tensor create(double value, int[] shape) {
-        int[] shape_;
-        if (shape.length < Tensor.RANK_MAX) {
-            shape_ = new int[Tensor.RANK_MAX];
-            Arrays.fill(shape_, 1);
-            System.arraycopy(shape, 0, shape_, 0, shape.length);
-        } else {
-            shape_ = shape;
-        }
+        int[] shape_ = validateShape(shape);
         int length = shape_[0];
         for (int i = 1; i < shape_.length; i++) {
             length *= shape_[i];
@@ -476,4 +471,40 @@ public class Utils {
         t.values[i * t.jklMax + j * t.klMax + k * t.shape[3] + l] = value;
     }
 
+    public static int[] validateShape(int... shape) {
+        int[] shape_ = new int[Tensor.RANK_MAX];
+        Arrays.fill(shape_, 1);
+        System.arraycopy(shape, 0, shape_, 0, shape.length);
+        List<Integer> list = new ArrayList<>();
+        for(int i = 0; i < Tensor.RANK_MAX; i++) {
+            if(shape_[i] != 1) {
+                list.add(shape_[i]);
+            }
+        }
+        if(list.size() == Tensor.RANK_MAX) {
+            return shape;
+        }
+        while(list.size() < Tensor.RANK_MAX) {
+            list.add(1);
+        }
+        return list.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    public static int calcRank(int... shape) {
+        int[] shape_;
+        if(shape.length != Tensor.RANK_MAX) {
+            shape_ = new int[Tensor.RANK_MAX];
+            Arrays.fill(shape_, 1);
+            System.arraycopy(shape, 0, shape_, 0, shape.length);
+        } else {
+            shape_ = shape;
+        }
+        int numOf1 = 0;
+        for(int i = 0; i < Tensor.RANK_MAX; i++) {
+            if(shape_[i] == 1) {
+                numOf1++;
+            }
+        }
+        return Tensor.RANK_MAX - numOf1;
+    }
 }

@@ -1,7 +1,6 @@
 package tensor4j;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
@@ -36,6 +35,7 @@ public class Tensor implements Cloneable, Serializable {
                 this.values[n++] = values[i][j];
             }
         }
+        validate();
     }
 
     public Tensor(double[][][] values) {
@@ -49,6 +49,7 @@ public class Tensor implements Cloneable, Serializable {
                 }
             }
         }
+        validate();
     }
 
     public Tensor(double[][][][] values) {
@@ -64,6 +65,7 @@ public class Tensor implements Cloneable, Serializable {
                 }
             }
         }
+        validate();
     }
 
     public Tensor(Tensor other) {
@@ -86,7 +88,9 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     protected Tensor(int... shape) {
-        this.shape = new int[RANK_MAX];
+        this.shape = Utils.validateShape(shape);
+        this.rank = Utils.calcRank(this.shape);
+        /*
         switch (shape.length) {
             case 0:
                 rank = 0;
@@ -157,11 +161,12 @@ public class Tensor implements Cloneable, Serializable {
             default:
                 throw new RuntimeException(Utils.ERROR_RANK);
         }
+
+         */
         length = this.shape[0] * this.shape[1] * this.shape[2] * this.shape[3];
         jklMax = this.shape[1] * this.shape[2] * this.shape[3];
         klMax = this.shape[2] * this.shape[3];
         values = new double[length];
-
     }
 
     public int getRank() {
@@ -216,24 +221,13 @@ public class Tensor implements Cloneable, Serializable {
         return clone;
     }
 
-    protected int calcRank(int... shape) {
-        for (int i = 0; i < shape.length; i++) {
-            if (shape[i] < 1) {
-                throw new RuntimeException(Utils.ERROR_SHAPE);
-            }
-        }
+    protected void validate() {
+        shape = Utils.validateShape(shape);
+        rank = Utils.calcRank(shape);
 
-        int numOf1 = 4;
-        boolean[] not1 = new boolean[RANK_MAX];
-        Arrays.fill(not1, false);
-        for (int i = 0; i < shape.length; i++) {
-            if (shape[i] != 1) {
-                numOf1 -= 1;
-                not1[i] = true;
-            }
-        }
-
-        return RANK_MAX - numOf1;
+        length = this.shape[0] * this.shape[1] * this.shape[2] * this.shape[3];
+        jklMax = this.shape[1] * this.shape[2] * this.shape[3];
+        klMax = this.shape[2] * this.shape[3];
     }
 
     public double getValue() {
