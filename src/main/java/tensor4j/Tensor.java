@@ -16,51 +16,45 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double value) {
         this();
-        rank = 0;
         values[0] = value;
     }
 
     public Tensor(double[] values) {
         this(values.length, 1, 1, 1);
-        rank = 1;
         this.values = values.clone();
     }
 
     public Tensor(double[][] values) {
         this(values.length, values[0].length);
-        rank = 2;
         int n = 0;
-        for (int i = 0; i < shape[0]; i++) {
-            for (int j = 0; j < shape[1]; j++) {
-                this.values[n++] = values[i][j];
+        for (double[] value : values) {
+            for (int j = 0; j < values[0].length; j++) {
+                this.values[n++] = value[j];
             }
         }
-        validate();
     }
 
     public Tensor(double[][][] values) {
         this(values.length, values[0].length, values[0][0].length);
-        rank = 3;
         int n = 0;
-        for (int i = 0; i < shape[0]; i++) {
-            for (int j = 0; j < shape[1]; j++) {
-                for (int k = 0; k < shape[2]; k++) {
-                    this.values[n++] = values[i][j][k];
+        for (double[][] value : values) {
+            for (int j = 0; j < values[0].length; j++) {
+                for (int k = 0; k < values[0][0].length; k++) {
+                    this.values[n++] = value[j][k];
                 }
             }
         }
-        validate();
     }
 
     public Tensor(double[][][][] values) {
         this(values.length, values[0].length, values[0][0].length, values[0][0][0].length);
         rank = 4;
         int n = 0;
-        for (int i = 0; i < shape[0]; i++) {
-            for (int j = 0; j < shape[1]; j++) {
-                for (int k = 0; k < shape[2]; k++) {
-                    for (int l = 0; l < shape[3]; l++) {
-                        this.values[n++] = values[i][j][k][l];
+        for (double[][][] value : values) {
+            for (int j = 0; j < values[0].length; j++) {
+                for (int k = 0; k < values[0][0].length; k++) {
+                    for (int l = 0; l < values[0][0][0].length; l++) {
+                        this.values[n++] = value[j][k][l];
                     }
                 }
             }
@@ -70,99 +64,24 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(Tensor other) {
         rank = other.rank;
-        shape = new int[RANK_MAX];
-        shape[0] = other.shape[0];
-        shape[1] = other.shape[1];
-        shape[2] = other.shape[2];
-        shape[3] = other.shape[3];
+        shape = other.shape.clone();
         jklMax = other.jklMax;
         klMax = other.klMax;
         length = other.length;
-        shape = other.shape.clone();
         values = other.values.clone();
     }
 
     public Tensor(double[] values, int[] shape) {
         this(shape);
+        if(length != values.length) {
+            throw new RuntimeException(Utils.ERROR_LENGTH);
+        }
         this.values = values.clone();
     }
 
     protected Tensor(int... shape) {
         this.shape = Utils.validateShape(shape);
         this.rank = Utils.calcRank(this.shape);
-        /*
-        switch (shape.length) {
-            case 0:
-                rank = 0;
-                this.shape[0] = 1;
-                this.shape[1] = 1;
-                this.shape[2] = 1;
-                this.shape[3] = 1;
-                break;
-            case 1:
-                if (shape[0] != 1) {
-                    rank = 1;
-                } else {
-                    rank = 0;
-                }
-                this.shape[0] = shape[0];
-                this.shape[1] = 1;
-                this.shape[2] = 1;
-                this.shape[3] = 1;
-                break;
-            case 2:
-                if (shape[0] == 1 && shape[1] == 1) {
-                    rank = 0;
-                } else {
-                    rank = 2;
-                }
-                this.shape[0] = shape[0];
-                this.shape[1] = shape[1];
-                this.shape[2] = 1;
-                this.shape[3] = 1;
-                break;
-            case 3:
-                if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1) {
-                    rank = 3;
-                } else if (shape[0] != 1 && shape[1] != 1) {
-                    rank = 2;
-                } else if (shape[0] != 1) {
-                    rank = 1;
-                } else {
-                    rank = 0;
-                }
-                this.shape[0] = shape[0];
-                this.shape[1] = shape[1];
-                this.shape[2] = shape[2];
-                this.shape[3] = 1;
-                break;
-            case 4:
-                if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1 && shape[3] != 1) {
-                    rank = 4;
-                } else if (shape[0] != 1 && shape[1] != 1 && shape[2] != 1) {
-                    rank = 3;
-                } else if (shape[0] != 1 && shape[1] != 1) {
-                    rank = 2;
-                } else if (shape[0] != 1) {
-                    rank = 1;
-                } else {
-                    if (shape[1] == 1 && shape[2] == 1 && shape[3] == 1) {
-                        rank = 0;
-                    } else {
-                        System.err.println(Utils.ERROR_SHAPE + ":" + Arrays.toString(shape));
-                        throw new RuntimeException(Utils.ERROR_SHAPE);
-                    }
-                }
-                this.shape[0] = shape[0];
-                this.shape[1] = shape[1];
-                this.shape[2] = shape[2];
-                this.shape[3] = shape[3];
-                break;
-            default:
-                throw new RuntimeException(Utils.ERROR_RANK);
-        }
-
-         */
         length = this.shape[0] * this.shape[1] * this.shape[2] * this.shape[3];
         jklMax = this.shape[1] * this.shape[2] * this.shape[3];
         klMax = this.shape[2] * this.shape[3];

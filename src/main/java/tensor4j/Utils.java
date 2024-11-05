@@ -29,42 +29,25 @@ public class Utils {
         return create(0.0, shape);
     }
 
-    public static Tensor create(double value, int[] shape) {
-        int[] shape_ = validateShape(shape);
-        int length = shape_[0];
-        for (int i = 1; i < shape_.length; i++) {
-            length *= shape_[i];
+    public static Tensor create(double value, int... shape) {
+        Tensor t = new Tensor(shape);
+        for (int i = 0; i < t.length; i++) {
+            t.values[i] = value;
         }
-        double[] values = new double[length];
-        for (int i = 0; i < length; i++) {
-            values[i] = value;
-        }
-        return new Tensor(values, shape_);
+        return t;
     }
 
-    public static Tensor createRandom(int[] shape) {
+    public static Tensor createRandom(int... shape) {
         return createRandom(1.0, shape);
     }
 
-    public static Tensor createRandom(double value, int[] shape) {
-        int[] shape_;
-        if (shape.length < Tensor.RANK_MAX) {
-            shape_ = new int[Tensor.RANK_MAX];
-            Arrays.fill(shape_, 1);
-            System.arraycopy(shape, 0, shape_, 0, shape.length);
-        } else {
-            shape_ = shape;
-        }
-        int length = shape_[0];
-        for (int i = 1; i < shape_.length; i++) {
-            length *= shape_[i];
-        }
-        double[] values = new double[length];
+    public static Tensor createRandom(double value, int... shape) {
+        Tensor t = new Tensor(shape);
         Random random = new Random(System.currentTimeMillis());
-        for (int i = 0; i < length; i++) {
-            values[i] = value * random.nextDouble();
+        for (int i = 0; i < t.length; i++) {
+            t.values[i] = value * random.nextDouble();
         }
-        return new Tensor(values, shape_);
+        return t;
     }
 
     public static Tensor createRandom(double valueMax, double valueMin, int... shape) {
