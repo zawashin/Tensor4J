@@ -73,7 +73,7 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double[] values, int[] shape) {
         this(shape);
-        if(length != values.length) {
+        if (length != values.length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
         this.values = values.clone();
