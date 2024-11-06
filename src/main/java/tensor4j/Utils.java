@@ -98,15 +98,54 @@ public class Utils {
         return tr;
     }
 
-    /*
-     * 2階のテンソルまでにしたので不要
-     */
-    // Stub
-    public static Tensor reshapeSumBackward(Tensor gy, int[] shape, int axis, boolean keepDims) {
-        if (gy == null) {
-            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+    public static Tensor reshapeSumBackward(Tensor gy, int[] xshape, boolean keepDims, int... axes) {
+        int ndim = xshape.length;
+        int[] tupledAxis;
+
+        // Convert axis to array form
+        if (axes == null) {
+            tupledAxis = null;
+        } else if (axes.length == 1) {
+            tupledAxis = new int[]{axes[0]};
+        } else if (axes instanceof int[]) {
+            tupledAxis = axes;
+        } else {
+            throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
         }
-        return gy.clone();
+
+        int[] shape;
+        if (!(ndim == 0 || tupledAxis == null || keepDims)) {
+            // Convert negative indices to positive
+            int[] actualAxis = new int[tupledAxis.length];
+            for (int i = 0; i < tupledAxis.length; i++) {
+                actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
+            }
+
+            // Sort axis indices
+            Arrays.sort(actualAxis);
+
+            // Convert gy shape to list for easier manipulation
+            List<Integer> shapeList = new ArrayList<>();
+            for (int dim : gy.shape) {
+                shapeList.add(dim);
+            }
+
+            // Insert 1's at the appropriate positions
+            for (int a : actualAxis) {
+                shapeList.add(a, 1);
+            }
+
+            // Convert back to array
+            shape = new int[shapeList.size()];
+            for (int i = 0; i < shapeList.size(); i++) {
+                shape[i] = shapeList.get(i);
+            }
+        } else {
+            shape = gy.shape;
+        }
+
+        // Reshape and return
+        return gy.reshape(shape);
     }
 
     public static Tensor reshape(Tensor t, int... shape) {
@@ -126,56 +165,59 @@ public class Utils {
         return sum(t, -1);
     }
 
-    public static Tensor sum(Tensor t, int axis, boolean keepdims) {
-        return sum(t, -1);
+    public static Tensor sum(Tensor t, int axis) {
+        return sum(t, axis, false);
     }
 
-    public static Tensor sum(Tensor t, int axis) {
+    public static Tensor sum(Tensor t, int axis, boolean keepdims) {
         if (t.getRank() > 2) {
-            throw new RuntimeException(Utils.ERROR_RANK);
+            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+        }
+        if (axis < 0) {
+            double sum = 0.0;
+            for (int i = 0; i < t.getLength(); i++) {
+                sum += t.getValues()[i];
+            }
+            return new Tensor(sum);
         }
         int[] sumShape = new int[Tensor.RANK_MAX];
-        if (axis < 0 || t.getRank() < 2) {
-            // 総和 axis < 0
-            // スカラ・ベクトルは一意にスカラ
-            Arrays.fill(sumShape, 1);
-        } else if (axis == 0) {
-            sumShape[0] = t.getShape()[1];
-            sumShape[1] = 1;
-            sumShape[2] = 1;
-            sumShape[3] = 1;
-        } else if (axis == 1) {
-            sumShape[0] = t.getShape()[0];
-            sumShape[1] = 1;
-            sumShape[2] = 1;
-            sumShape[3] = 1;
-        }
-        int length;
-        length = sumShape[0];
-        for (int i = 1; i < t.length; i++) {
-            length *= sumShape[i];
-        }
-        double[] values = new double[length];
-        if (axis < 0 || t.getRank() < 2) {
-            for (int i = 0; i < t.getLength(); i++) {
-                values[0] += t.getValues()[i];
-            }
-        } else if (t.rank == 2 && axis == 0) {
-            for (int i = 0; i < t.shape[0]; i++) {
-                for (int j = 0; j < t.shape[1]; j++) {
-                    values[j] += Utils.getValue(t, i, j);
+        Arrays.fill(sumShape, 1);
+        double[] sums = null;
+        switch (t.getRank()) {
+            case 0:
+            case 1:
+                Arrays.fill(sumShape, 1);
+                sums = new double[1];
+                for (int i = 0; i < t.getLength(); i++) {
+                    sums[0] += t.getValues()[i];
                 }
-            }
-        } else if (t.rank == 2 && axis == 1) {
-            for (int i = 0; i < t.shape[0]; i++) {
-                for (int j = 0; j < t.shape[1]; j++) {
-                    values[i] += Utils.getValue(t, i, j);
+                break;
+            case 2:
+                if (axis == 0) {
+                    sums = new double[t.getShape(1)];
+                    for (int i = 0; i < t.shape[0]; i++) {
+                        for (int j = 0; j < t.shape[1]; j++) {
+                            sums[j] += Utils.getValue(t, i, j);
+                        }
+                    }
+                } else if (axis == 1) {
+                    sums = new double[t.getShape(0)];
+                    for (int i = 0; i < t.shape[0]; i++) {
+                        for (int j = 0; j < t.shape[1]; j++) {
+                            sums[i] += Utils.getValue(t, i, j);
+                        }
+                    }
+                } else {
+                    throw new RuntimeException("Axis must be Less than 2");
                 }
-            }
-        } else {
-
+                break;
+            case 3:
+            case 4:
+                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+            default:
+                throw new RuntimeException(Utils.ERROR_RANK);
         }
-        return new Tensor(values, sumShape);
+        return new Tensor(sums);
     }
 
     // ChatGPTで修正

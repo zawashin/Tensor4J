@@ -1,6 +1,9 @@
 package tensor4j;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
@@ -48,7 +51,6 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double[][][][] values) {
         this(values.length, values[0].length, values[0][0].length, values[0][0][0].length);
-        rank = 4;
         int n = 0;
         for (double[][][] value : values) {
             for (int j = 0; j < values[0].length; j++) {
@@ -59,7 +61,6 @@ public class Tensor implements Cloneable, Serializable {
                 }
             }
         }
-        validate();
     }
 
     public Tensor(Tensor other) {
@@ -313,28 +314,21 @@ public class Tensor implements Cloneable, Serializable {
         }
     }
 
-    /*
-     * 2階のテンソルまでにしたので不要
-     */
-    // Stub
-    public Tensor reshapeSumBackward(Tensor gy, int[] shape, int axis) {
-        if (gy != null) {
-            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
-        }
-        Tensor x = gy.clone();
-        return new Tensor(x);
-    }
-
     public Tensor reshape(int[] shape) {
         return Utils.reshape(this, shape);
     }
 
     public Tensor sum() {
-        return Utils.sum(this, -1, true);
+        return Utils.sum(this, -1, false);
     }
 
+    public Tensor sum(int axis) {
+        return Utils.sum(this, axis, false);
+    }
+
+
     public Tensor sum(int axis, boolean keepidm) {
-        return Utils.sum(this, axis, true);
+        return Utils.sum(this, axis, keepidm);
     }
 
     public Tensor broadcastTo(int[] shape) {
@@ -345,4 +339,57 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.sumTo(this, shape);
     }
 
+    public Tensor reshapeSumBackward(Tensor gy, int[] xshape, int axis, boolean keepdims) {
+        //    public static Variable reshapeSumBackward(Variable gy, int[] xShape, Object axis, boolean keepdims) {
+        int ndim = xshape.length;
+        int[] tupledAxis = null;
+
+        // Convert axis to array form
+        /*
+        if (axis == null) {
+            tupledAxis = null;
+        } else if (axis instanceof Integer) {
+            tupledAxis = new int[]{(Integer) axis};
+        } else if (axis instanceof int[]) {
+            tupledAxis = (int[]) axis;
+        } else {
+            throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
+        }
+
+         */
+
+        int[] shape;
+        if (!(ndim == 0 || tupledAxis == null || keepdims)) {
+            // Convert negative indices to positive
+            int[] actualAxis = new int[tupledAxis.length];
+            for (int i = 0; i < tupledAxis.length; i++) {
+                actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
+            }
+
+            // Sort axis indices
+            Arrays.sort(actualAxis);
+
+            // Convert gy shape to list for easier manipulation
+            List<Integer> shapeList = new ArrayList<>();
+            for (int dim : gy.shape) {
+                shapeList.add(dim);
+            }
+
+            // Insert 1's at the appropriate positions
+            for (int a : actualAxis) {
+                shapeList.add(a, 1);
+            }
+
+            // Convert back to array
+            shape = new int[shapeList.size()];
+            for (int i = 0; i < shapeList.size(); i++) {
+                shape[i] = shapeList.get(i);
+            }
+        } else {
+            shape = gy.shape;
+        }
+
+        // Reshape and return
+        return gy.reshape(shape);
+    }
 }
