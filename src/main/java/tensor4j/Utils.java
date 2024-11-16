@@ -258,26 +258,31 @@ public class Utils {
                 case 1:
                     switch (tb.rank) {
                         case 0:
-                        case 1:
                             throw new RuntimeException();
+                        case 1:
+                            for (int i = 0; i < tb.shape[0]; i++) {
+                                int i_ = i % t.shape[0];
+                                tb.setValue(i, t.getValue(i_));
+                            }
+                            break;
                         case 2:
                             if (t.shape[0] == tb.shape[1]) {
                                 for (int i = 0; i < tb.shape[0]; i++) {
-                                    //int i_ = i % t.shape[i];
                                     for (int j = 0; j < t.shape[0]; j++) {
                                         tb.setValue(i, j, t.getValue(j));
                                     }
                                 }
                                 break;
                             } else if (t.shape[0] == tb.shape[0] && t.shape[1] != tb.shape[1]) {
-                                for (int i = 0; i < t.shape[0]; i++) {
-                                    for (int j = 0; j < t.shape[0]; j++) {
-                                        int j_ = j % t.shape[j];
+                                for (int i = 0; i < tb.shape[0]; i++) {
+                                    for (int j = 0; j < tb.shape[1]; j++) {
+                                        int j_ = j % t.shape[0];
                                         tb.setValue(i, j, t.getValue(j_));
                                     }
                                 }
                                 break;
                             } else if (t.shape[0] == tb.shape[0]) {
+                                /*
                                 if (axis == 0) {
                                     for (int i = 0; i < tb.shape[0]; i++) {
                                         for (int j = 0; j < t.shape[0]; j++) {
@@ -293,6 +298,11 @@ public class Utils {
                                     }
                                 }
                                 break;
+
+                                 */
+                                System.err.println(Arrays.toString(t.shape));
+                                System.err.println(Arrays.toString(tb.shape));
+                                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
                             } else {
                                 System.err.println(Arrays.toString(t.shape));
                                 System.err.println(Arrays.toString(tb.shape));
