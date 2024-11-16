@@ -16,6 +16,7 @@
     - Operatorsクラス
   - その他の操作
     - Utilsクラス
+  - 例外処理をしてない
 
 ## 参考資料
 - [Deepnetts Community Edition](https://github.com/deepnetts/deepnetts-communityedition) 

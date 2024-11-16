@@ -99,53 +99,59 @@ public class Utils {
     }
 
     public static Tensor reshapeSumBackward(Tensor gy, int[] xshape, boolean keepDims, int... axes) {
-        int ndim = xshape.length;
-        int[] tupledAxis;
+        try {
+            int ndim = xshape.length;
+            int[] tupledAxis;
 
-        // Convert axis to array form
-        if (axes == null) {
-            tupledAxis = null;
-        } else if (axes.length == 1) {
-            tupledAxis = new int[]{axes[0]};
-        } else if (axes instanceof int[]) {
-            tupledAxis = axes;
-        } else {
-            throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
+            // Convert axis to array form
+            if (axes == null) {
+                tupledAxis = null;
+            } else if (axes.length == 1) {
+                tupledAxis = new int[]{axes[0]};
+            } else if (axes instanceof int[]) {
+                tupledAxis = axes;
+            } else {
+                throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
+            }
+
+            int[] shape;
+            if (!(ndim == 0 || tupledAxis == null || keepDims)) {
+                // Convert negative indices to positive
+                int[] actualAxis = new int[tupledAxis.length];
+                for (int i = 0; i < tupledAxis.length; i++) {
+                    actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
+                }
+
+                // Sort axis indices
+                Arrays.sort(actualAxis);
+
+                // Convert gy shape to list for easier manipulation
+                List<Integer> shapeList = new ArrayList<>();
+                for (int dim : gy.shape) {
+                    shapeList.add(dim);
+                }
+
+                // Insert 1's at the appropriate positions
+                for (int a : actualAxis) {
+                    shapeList.add(a, 1);
+                }
+
+                // Convert back to array
+                shape = new int[shapeList.size()];
+                for (int i = 0; i < shapeList.size(); i++) {
+                    shape[i] = shapeList.get(i);
+                }
+            } else {
+                shape = gy.shape;
+            }
+
+            // Reshape and return
+            return gy.reshape(shape);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
-
-        int[] shape;
-        if (!(ndim == 0 || tupledAxis == null || keepDims)) {
-            // Convert negative indices to positive
-            int[] actualAxis = new int[tupledAxis.length];
-            for (int i = 0; i < tupledAxis.length; i++) {
-                actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
-            }
-
-            // Sort axis indices
-            Arrays.sort(actualAxis);
-
-            // Convert gy shape to list for easier manipulation
-            List<Integer> shapeList = new ArrayList<>();
-            for (int dim : gy.shape) {
-                shapeList.add(dim);
-            }
-
-            // Insert 1's at the appropriate positions
-            for (int a : actualAxis) {
-                shapeList.add(a, 1);
-            }
-
-            // Convert back to array
-            shape = new int[shapeList.size()];
-            for (int i = 0; i < shapeList.size(); i++) {
-                shape[i] = shapeList.get(i);
-            }
-        } else {
-            shape = gy.shape;
-        }
-
-        // Reshape and return
-        return gy.reshape(shape);
+        return null;
     }
 
     public static Tensor reshape(Tensor t, int... shape) {
@@ -170,95 +176,185 @@ public class Utils {
     }
 
     public static Tensor sum(Tensor t, int axis, boolean keepdims) {
-        if (t.getRank() > 2) {
-            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
-        }
-        if (axis < 0) {
-            double sum = 0.0;
-            for (int i = 0; i < t.getLength(); i++) {
-                sum += t.getValues()[i];
-            }
-            return new Tensor(sum);
-        }
-        int[] sumShape = new int[Tensor.RANK_MAX];
-        Arrays.fill(sumShape, 1);
         double[] sums = null;
-        switch (t.getRank()) {
-            case 0:
-            case 1:
-                Arrays.fill(sumShape, 1);
-                sums = new double[1];
-                for (int i = 0; i < t.getLength(); i++) {
-                    sums[0] += t.getValues()[i];
-                }
-                break;
-            case 2:
-                if (axis == 0) {
-                    sums = new double[t.getShape(1)];
-                    for (int i = 0; i < t.shape[0]; i++) {
-                        for (int j = 0; j < t.shape[1]; j++) {
-                            sums[j] += Utils.getValue(t, i, j);
-                        }
-                    }
-                } else if (axis == 1) {
-                    sums = new double[t.getShape(0)];
-                    for (int i = 0; i < t.shape[0]; i++) {
-                        for (int j = 0; j < t.shape[1]; j++) {
-                            sums[i] += Utils.getValue(t, i, j);
-                        }
-                    }
-                } else {
-                    throw new RuntimeException("Axis must be Less than 2");
-                }
-                break;
-            case 3:
-            case 4:
+        try {
+            if (t.getRank() > 2) {
                 throw new RuntimeException(Utils.NOT_IMPLEMENTED);
-            default:
-                throw new RuntimeException(Utils.ERROR_RANK);
+            }
+            if (axis < 0) {
+                double sum = 0.0;
+                for (int i = 0; i < t.getLength(); i++) {
+                    sum += t.getValues()[i];
+                }
+                return new Tensor(sum);
+            }
+            switch (t.getRank()) {
+                case 0:
+                case 1:
+                    sums = new double[1];
+                    for (int i = 0; i < t.getLength(); i++) {
+                        sums[0] += t.getValues()[i];
+                    }
+                    break;
+                case 2:
+                    if (axis == 0) {
+                        sums = new double[t.getShape(1)];
+                        for (int i = 0; i < t.shape[0]; i++) {
+                            for (int j = 0; j < t.shape[1]; j++) {
+                                sums[j] += Utils.getValue(t, i, j);
+                            }
+                        }
+                    } else if (axis == 1) {
+                        sums = new double[t.getShape(0)];
+                        for (int i = 0; i < t.shape[0]; i++) {
+                            for (int j = 0; j < t.shape[1]; j++) {
+                                sums[i] += Utils.getValue(t, i, j);
+                            }
+                        }
+                    } else {
+                        throw new RuntimeException("Axis must be Less than 2");
+                    }
+                    break;
+                case 3:
+                case 4:
+                    throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                default:
+                    throw new RuntimeException(Utils.ERROR_RANK);
+            }
+        } catch (RuntimeException exception) {
+            System.err.println(exception.getMessage());
+            System.exit(0);
         }
         return new Tensor(sums);
     }
 
-    // ChatGPTで修正
     public static Tensor broadcastTo(Tensor t, int[] shape) {
-        int length = shape[0];
-        for (int i = 1; i < shape.length; i++) {
-            length *= shape[i];
-        }
-        double[] values = new double[length];
-        int n = 0;
-        int[] xShape = t.getShape();
-        int xShape0 = xShape[0];
-        int xShape1 = xShape[1];
-        int shape0 = shape[0];
-        int shape1 = shape[1];
+        return broadcastTo(t, shape, 0);
+    }
 
-        for (int j = 0; j < shape1; j++) {
-            for (int i = 0; i < shape0; i++) {
-                int rowIndex = (xShape0 == 1 || xShape0 == shape0) ? Math.min(i, xShape0 - 1) : i % xShape0;
-                int colIndex = (xShape1 == 1 || xShape1 == shape1) ? Math.min(j, xShape1 - 1) : j % xShape1;
-                values[n++] = t.getValue(rowIndex, colIndex);
+    public static Tensor broadcastTo(Tensor t, int[] shape, int axis) {
+        try {
+            int[] shape_ = new int[Tensor.RANK_MAX];
+            Arrays.fill(shape_, 1);
+            System.arraycopy(shape, 0, shape_, 0, shape.length);
+            int[] xShape = t.getShape();
+            Tensor tb = new Tensor(shape_);
+            // ブロードキャスト形が整数倍になっているかのチェック
+            /*
+            for (int i = 0; i < Tensor.RANK_MAX; i++) {
+                if(t.shape[i] != (tb.shape[i]/t.shape[i]) * t.shape[i]) {
+                    throw new RuntimeException(Utils.ERROR_SHAPE);
+                }
             }
+
+             */
+            int n = 0;
+            switch (t.rank) {
+                case 0:
+                    for (int i = 0; i < tb.getLength(); i++) {
+                        tb.getValues()[i] = t.getValue();
+                    }
+                    break;
+                case 1:
+                    switch (tb.rank) {
+                        case 0:
+                        case 1:
+                            throw new RuntimeException();
+                        case 2:
+                            if (t.shape[0] == tb.shape[1]) {
+                                for (int i = 0; i < tb.shape[0]; i++) {
+                                    //int i_ = i % t.shape[i];
+                                    for (int j = 0; j < t.shape[0]; j++) {
+                                        tb.setValue(i, j, t.getValue(j));
+                                    }
+                                }
+                                break;
+                            } else if (t.shape[0] == tb.shape[0] && t.shape[1] != tb.shape[1]) {
+                                for (int i = 0; i < t.shape[0]; i++) {
+                                    for (int j = 0; j < t.shape[0]; j++) {
+                                        int j_ = j % t.shape[j];
+                                        tb.setValue(i, j, t.getValue(j_));
+                                    }
+                                }
+                                break;
+                            } else if (t.shape[0] == tb.shape[0]) {
+                                if (axis == 0) {
+                                    for (int i = 0; i < tb.shape[0]; i++) {
+                                        for (int j = 0; j < t.shape[0]; j++) {
+                                            tb.setValue(i, j, t.getValue(j));
+                                        }
+                                    }
+                                } else {
+                                    for (int i = 0; i < t.shape[0]; i++) {
+                                        for (int j = 0; j < t.shape[0]; j++) {
+                                            int j_ = j % t.shape[j];
+                                            tb.setValue(i, j, t.getValue(j_));
+                                        }
+                                    }
+                                }
+                                break;
+                            } else {
+                                System.err.println(Arrays.toString(t.shape));
+                                System.err.println(Arrays.toString(tb.shape));
+                                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                            }
+                    }
+                    break;
+                case 2:
+                    switch (tb.rank) {
+                        case 0:
+                        case 1:
+                            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                        case 2:
+                            for (int i = 0; i < shape[0]; i++) {
+                                for (int j = 0; j < shape[1]; j++) {
+                                    int i_ = (xShape[0] == 1 || xShape[0] == shape[0]) ? Math.min(i, xShape[0] - 1) : i % xShape[0];
+                                    int j_ = (xShape[1] == 1 || xShape[1] == shape[1]) ? Math.min(j, xShape[1] - 1) : j % xShape[1];
+                                    tb.getValues()[n++] = t.getValue(i_, j_);
+                                }
+                            }
+                            break;
+                        case 3:
+                        case 4:
+                            throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                    }
+                    break;
+                case 3:
+                case 4:
+                    throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                default:
+                    break;
+            }
+            return tb;
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
-        return new Tensor(values, shape);
+        return null;
     }
 
     // ChatGPTで修正
     public static Tensor sumTo(Tensor t, int[] shape) {
         double[] values = new double[shape[0] * shape[1]];
         int[] xShape = t.getShape();
-        int xShape0 = xShape[0];
-        int xShape1 = xShape[1];
-        int shape0 = shape[0];
-        int shape1 = shape[1];
 
-        for (int i = 0; i < xShape[0]; i++) {
-            for (int j = 0; j < xShape[0]; j++) {
-                int rowIndex = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
-                int colIndex = (shape1 == 1 || shape1 == xShape1) ? Math.min(j, shape1 - 1) : j % shape1;
-                values[rowIndex * shape1 + colIndex] += t.getValue(i, j);
-            }
+        switch (t.rank) {
+            case 0:
+            case 1:
+                break;
+            case 2:
+                for (int i = 0; i < xShape[0]; i++) {
+                    for (int j = 0; j < xShape[0]; j++) {
+                        int rowIndex = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
+                        int colIndex = (shape[1] == 1 || shape[1] == xShape[1]) ? Math.min(j, shape[1] - 1) : j % shape[1];
+                        values[rowIndex * shape[1] + colIndex] += t.getValue(i, j);
+                    }
+                }
+                break;
+            case 3:
+            case 4:
+                break;
+            default:
         }
         return new Tensor(values, shape);
     }
@@ -269,6 +365,14 @@ public class Utils {
         int[] shape = new int[Tensor.RANK_MAX];
         for (int i = 0; i < Tensor.RANK_MAX; i++) {
             shape[i] = Math.max(t0.shape[i], t1.shape[i]);
+        }
+        return shape;
+    }
+
+    public static int[] broadcastShape(Tensor... ts) {
+        int[] shape = new int[Tensor.RANK_MAX];
+        for (int i = 0; i < Tensor.RANK_MAX; i++) {
+            shape[i] = Math.max(ts[0].shape[i], ts[1].shape[i]);
         }
         return shape;
     }
