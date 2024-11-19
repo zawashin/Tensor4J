@@ -371,18 +371,21 @@ public class Utils {
 
     // 2つの Tensor を相互的にブロードキャストするサイズを求める
     // ※Tensorは四則演算の際などに自動的にブロードキャストが行われないため明示的にこの関数を利用する
-    public static int[] broadcastShape(Tensor t0, Tensor t1) {
-        int[] shape = new int[Tensor.RANK_MAX];
-        for (int i = 0; i < Tensor.RANK_MAX; i++) {
-            shape[i] = Math.max(t0.shape[i], t1.shape[i]);
-        }
-        return shape;
-    }
-
     public static int[] broadcastShape(Tensor... ts) {
         int[] shape = new int[Tensor.RANK_MAX];
+        int[] shape0 = ts[0].shape.clone();
+        int[] shape1 = ts[1].shape.clone();
+        //1階のテンソルを1xNの2階テンソルに変換
+        if (ts[0].rank == 1) {
+            shape0[0] = ts[0].shape[1];
+            shape0[1] = ts[0].shape[0];
+        }
+        if (ts[1].rank == 1) {
+            shape1[0] = ts[1].shape[1];
+            shape1[1] = ts[1].shape[0];
+        }
         for (int i = 0; i < Tensor.RANK_MAX; i++) {
-            shape[i] = Math.max(ts[0].shape[i], ts[1].shape[i]);
+            shape[i] = Math.max(shape0[i], shape1[i]);
         }
         return shape;
     }
