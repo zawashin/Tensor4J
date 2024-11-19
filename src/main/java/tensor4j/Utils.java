@@ -355,9 +355,9 @@ public class Utils {
             case 2:
                 for (int i = 0; i < xShape[0]; i++) {
                     for (int j = 0; j < xShape[0]; j++) {
-                        int rowIndex = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
-                        int colIndex = (shape[1] == 1 || shape[1] == xShape[1]) ? Math.min(j, shape[1] - 1) : j % shape[1];
-                        values[rowIndex * shape[1] + colIndex] += t.getValue(i, j);
+                        int i_ = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
+                        int j_ = (shape[1] == 1 || shape[1] == xShape[1]) ? Math.min(j, shape[1] - 1) : j % shape[1];
+                        values[i_ * shape[1] + j_] += t.getValue(i, j);
                     }
                 }
                 break;
@@ -587,7 +587,8 @@ public class Utils {
         if (t.rank != 2) try {
             throw new Exception();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println(ERROR_RANK + Arrays.toString(t.getShape()));
+            System.exit(1);
         }
         t.values[i * t.jklMax + j] = value;
     }
@@ -596,7 +597,8 @@ public class Utils {
         if (t.rank != 3) try {
             throw new Exception();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println(ERROR_RANK + Arrays.toString(t.getShape()));
+            System.exit(1);
         }
         t.values[i * t.jklMax + j * t.klMax + k] = value;
     }
