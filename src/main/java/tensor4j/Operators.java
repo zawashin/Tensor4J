@@ -220,15 +220,13 @@ public class Operators {
                     case 0:
                         return Operators.times(t0, t1.values[0]);
                     case 1:
-                        if (t0.shape[0] != t1.shape[0]) {
-                            System.out.println(Arrays.toString(t0.getShape()));
-                            System.out.println(Arrays.toString(t1.getShape()));
-                            throw new RuntimeException(Utils.ERROR_SHAPE);
-                        }
-                        shape = new int[]{1, 1, 1, 1};
-                        values = new double[1];
+                        shape = new int[]{t1.shape[0], t0.shape[0]};
+                        values = new double[t1.shape[0] * t0.shape[0]];
+                        int n = 0;
                         for (int i = 0; i < t0.shape[0]; i++) {
-                            values[0] += t0.getValue(i) * t1.getValue(i);
+                            for (int j = 0; j < t0.shape[0]; j++) {
+                                values[n++] = t0.getValue(i) * t1.getValue(i);
+                            }
                         }
                         break;
                     case 2:
@@ -266,7 +264,7 @@ public class Operators {
                             System.out.println(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
-                        shape = new int[]{t0.shape[0], 1, 1, 1};
+                        shape = new int[]{t0.shape[0]};
                         values = new double[t0.shape[0]];
                         for (int i = 0; i < t0.shape[0]; i++) {
                             double value = 0.0;

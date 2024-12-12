@@ -1,5 +1,6 @@
 package tensor4j;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,12 +10,14 @@ import java.util.List;
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
  */
 public class Tensor implements Cloneable, Serializable {
+    @Serial
+    private static final long serialVersionUID = -5871953224191632639L;
     public static int RANK_MAX = 4;
     protected int rank;
     protected int[] shape;
     protected int length;
-    protected int jklMax;
-    protected int klMax;
+    protected int shape1x2x3;
+    protected int shape2x3;
     protected double[] values;
 
     public Tensor(double value) {
@@ -23,7 +26,7 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor(double[] values) {
-        this(values.length, 1, 1, 1);
+        this(new int[]{values.length});
         this.values = values.clone();
     }
 
@@ -39,6 +42,7 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double[][][] values) {
         this(values.length, values[0].length, values[0][0].length);
+        rank = 3;
         int n = 0;
         for (double[][] value : values) {
             for (int j = 0; j < values[0].length; j++) {
@@ -51,6 +55,7 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double[][][][] values) {
         this(values.length, values[0].length, values[0][0].length, values[0][0][0].length);
+        rank = 4;
         int n = 0;
         for (double[][][] value : values) {
             for (int j = 0; j < values[0].length; j++) {
@@ -66,14 +71,15 @@ public class Tensor implements Cloneable, Serializable {
     public Tensor(Tensor other) {
         rank = other.rank;
         shape = other.shape.clone();
-        jklMax = other.jklMax;
-        klMax = other.klMax;
+        shape1x2x3 = other.shape1x2x3;
+        shape2x3 = other.shape2x3;
         length = other.length;
         values = other.values.clone();
     }
 
-    public Tensor(double[] values, int[] shape) {
+    public Tensor(double[] values, int... shape) {
         this(shape);
+        rank = Utils.calcRank(shape);
         if (length != values.length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
@@ -81,20 +87,39 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     protected Tensor(int... shape) {
-        this.shape = Utils.validateShape(shape);
-        this.rank = Utils.calcRank(this.shape);
-        length = this.shape[0] * this.shape[1] * this.shape[2] * this.shape[3];
-        jklMax = this.shape[1] * this.shape[2] * this.shape[3];
-        klMax = this.shape[2] * this.shape[3];
+        this.shape = shape.clone();
+        rank = shape.length;
+        switch (rank) {
+            case 0:
+                length = 1;
+                break;
+            case 1:
+                length = shape[0];
+                break;
+            case 2:
+                length = shape[0] * shape[1];
+                shape1x2x3 = shape[1];
+                shape2x3 = 1;
+                break;
+            case 3:
+                length = shape[0] * shape[1] * shape[2];
+                shape1x2x3 = shape[1] * shape[2];
+                shape2x3 = shape[2];
+                break;
+            case 4:
+                length = shape[0] * shape[1] * shape[2] * shape[3];
+                shape1x2x3 = shape[1] * shape[2] * shape[3];
+                shape2x3 = shape[2] * shape[3];
+                break;
+            default:
+                throw new RuntimeException(Utils.ERROR_RANK);
+        }
         values = new double[length];
     }
 
+
     public int getRank() {
         return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
     }
 
     public int getLength() {
@@ -139,15 +164,6 @@ public class Tensor implements Cloneable, Serializable {
         clone.values = this.values.clone();
         clone.shape = this.shape.clone();
         return clone;
-    }
-
-    protected void validate() {
-        shape = Utils.validateShape(shape);
-        rank = Utils.calcRank(shape);
-
-        length = this.shape[0] * this.shape[1] * this.shape[2] * this.shape[3];
-        jklMax = this.shape[1] * this.shape[2] * this.shape[3];
-        klMax = this.shape[2] * this.shape[3];
     }
 
     public double getValue() {
@@ -304,14 +320,6 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor mse(Tensor t) {
         return Operators.mse(this, t);
-    }
-
-    public Tensor to2ndOrder() {
-        if (rank == 1) {
-            return Utils.to2ndOrder(this);
-        } else {
-            throw new RuntimeException(Utils.ERROR_RANK);
-        }
     }
 
     public Tensor reshape(int[] shape) {

@@ -26,14 +26,12 @@ public class Utils {
     public static final String NOT_IMPLEMENTED = ERROR_MESSAGE[Tensor.RANK_MAX + 4];
 
     public static Tensor create(int... shape) {
-        return create(0.0, shape);
+        return new Tensor(shape);
     }
 
-    public static Tensor create(double value, int... shape) {
+    public static Tensor fill(double value, int... shape) {
         Tensor t = new Tensor(shape);
-        for (int i = 0; i < t.length; i++) {
-            t.values[i] = value;
-        }
+        Arrays.fill(t.values, value);
         return t;
     }
 
@@ -54,16 +52,6 @@ public class Utils {
         return createRandom(valueMax - valueMin, shape);
     }
 
-    public static Tensor to2ndOrder(Tensor t) {
-        if (t.rank == 1) {
-            int[] shape = new int[]{t.getShape(1), t.getShape(0), t.getShape(2), t.getShape(3)};
-            double[][] values = new double[][]{t.getValues()};
-            return new Tensor(values);
-        } else {
-            throw new RuntimeException(Utils.ERROR_RANK);
-        }
-    }
-
     public static Tensor transpose(Tensor t, int... axes) {
         int[] shape = new int[Tensor.RANK_MAX];
         Arrays.fill(shape, 1);
@@ -79,7 +67,7 @@ public class Utils {
                 if (axes.length != 0) {
                     throw new RuntimeException();
                 }
-                tr = Utils.create(t.shape[1], t.shape[0], 1, 1);
+                tr = Utils.create(t.shape[1], t.shape[0]);
                 for (int i = 0; i < t.shape[0]; i++) {
                     for (int j = 0; j < t.shape[1]; j++) {
                         tr.setValue(j, i, t.getValue(i, j));
@@ -399,7 +387,7 @@ public class Utils {
                 break;
             case 1:
                 buffer.append("[");
-                for (int i = 0; i < t.shape[0]; i++) {
+                for (int i = 0; i < t.values.length; i++) {
                     buffer.append(t.getValue(i));
                     if (i == t.shape[0] - 1) {
                         buffer.append("]");
@@ -546,7 +534,7 @@ public class Utils {
             throw new RuntimeException(e);
         }
         //return t.values[i * t.jklMax + j * t.klMax];
-        return t.values[i * t.jklMax + j];
+        return t.values[i * t.shape[1] + j];
     }
 
     public static double getValue(Tensor t, int i, int j, int k) {
@@ -556,7 +544,7 @@ public class Utils {
             throw new RuntimeException(e);
         }
         //return t.values[i * t.jklMax + j * t.klMax + k * t.shape[3]];
-        return t.values[i * t.jklMax + j * t.klMax + k];
+        return t.values[i * t.shape1x2x3 + j * t.shape2x3 + k];
     }
 
     public static double getValue(Tensor t, int i, int j, int k, int l) {
@@ -565,7 +553,7 @@ public class Utils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return t.values[i * t.jklMax + j * t.klMax + k * t.shape[3] + l];
+        return t.values[i * t.shape1x2x3 + j * t.shape2x3 + k * t.shape[3] + l];
     }
 
     public static void setValue(Tensor t, double value) {
@@ -593,7 +581,7 @@ public class Utils {
             System.err.println(ERROR_RANK + Arrays.toString(t.getShape()));
             System.exit(1);
         }
-        t.values[i * t.jklMax + j] = value;
+        t.values[i * t.shape1x2x3 + j] = value;
     }
 
     public static void setValue(Tensor t, int i, int j, int k, double value) {
@@ -603,7 +591,7 @@ public class Utils {
             System.err.println(ERROR_RANK + Arrays.toString(t.getShape()));
             System.exit(1);
         }
-        t.values[i * t.jklMax + j * t.klMax + k] = value;
+        t.values[i * t.shape1x2x3 + j * t.shape2x3 + k] = value;
     }
 
     public static void setValue(Tensor t, int i, int j, int k, int l, double value) {
@@ -612,26 +600,14 @@ public class Utils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        t.values[i * t.jklMax + j * t.klMax + k * t.shape[3] + l] = value;
+        t.values[i * t.shape1x2x3 + j * t.shape2x3 + k * t.shape[3] + l] = value;
     }
 
     public static int[] validateShape(int... shape) {
         int[] shape_ = new int[Tensor.RANK_MAX];
         Arrays.fill(shape_, 1);
         System.arraycopy(shape, 0, shape_, 0, shape.length);
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < Tensor.RANK_MAX; i++) {
-            if (shape_[i] != 1) {
-                list.add(shape_[i]);
-            }
-        }
-        if (list.size() == Tensor.RANK_MAX) {
-            return shape;
-        }
-        while (list.size() < Tensor.RANK_MAX) {
-            list.add(1);
-        }
-        return list.stream().mapToInt(Integer::intValue).toArray();
+        return shape_;
     }
 
     public static int calcRank(int... shape) {
@@ -643,6 +619,15 @@ public class Utils {
         } else {
             shape_ = shape;
         }
+        /*
+        int rank = 0;
+        for (int i = 0; i < Tensor.RANK_MAX; i++) {
+            if (shape_[i] != 1) {
+                rank = i;
+            }
+        }
+        return rank;
+         */
         int numOf1 = 0;
         for (int i = 0; i < Tensor.RANK_MAX; i++) {
             if (shape_[i] == 1) {
