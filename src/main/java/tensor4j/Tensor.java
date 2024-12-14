@@ -220,6 +220,13 @@ public class Tensor implements Cloneable, Serializable {
     public Tensor plus(double d) {
         return Operators.plus(this, d);
     }
+    public void plusAssign(Tensor t) {
+        Operators.plusAssign(this, t);
+    }
+
+    public void plusAssign(double d) {
+        Operators.plusAssign(this, d);
+    }
 
     public Tensor minus(Tensor d) {
         return Operators.minus(this, d);
@@ -227,6 +234,14 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor minus(double t) {
         return Operators.minus(this, t);
+    }
+
+    public void minusAssign(Tensor d) {
+        Operators.minusAssign(this, d);
+    }
+
+    public void minusAssign(double t) {
+        Operators.minusAssign(this, t);
     }
 
     public Tensor times(Tensor t) {
@@ -237,12 +252,28 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.times(this, d);
     }
 
+    public void timesAssign(Tensor d) {
+        Operators.timesAssign(this, d);
+    }
+
+    public void timesAssign(double t) {
+        Operators.timesAssign(this, t);
+    }
+
     public Tensor div(Tensor t) {
         return Operators.div(this, t);
     }
 
     public Tensor div(double d) {
         return Operators.div(this, d);
+    }
+
+    public void divAssign(Tensor d) {
+        Operators.divAssign(this, d);
+    }
+
+    public void divAssign(double t) {
+        Operators.divAssign(this, t);
     }
 
     public Tensor neg() {

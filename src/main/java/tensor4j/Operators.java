@@ -26,6 +26,21 @@ public class Operators {
         return new Tensor(values, t0.shape);
     }
 
+    public static void plusAssign(Tensor t0, Tensor t1) {
+        if (!Arrays.equals(t0.shape, t1.shape)) {
+            throw new RuntimeException(Utils.ERROR_SHAPE);
+        }
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] += t1.values[i];
+        }
+    }
+
+    public static void plusAssign(Tensor t0, double d) {
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] += d;
+        }
+    }
+
     public static Tensor minus(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
             throw new RuntimeException(Utils.ERROR_SHAPE);
@@ -43,6 +58,22 @@ public class Operators {
             values[i] = t0.values[i] - d;
         }
         return new Tensor(values, t0.shape);
+    }
+
+    public static void minusAssign(Tensor t0, Tensor t1) {
+        if (!Arrays.equals(t0.shape, t1.shape)) {
+            throw new RuntimeException(Utils.ERROR_SHAPE);
+        }
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] -= t1.values[i];
+        }
+    }
+
+    public static void minusAssign(Tensor t0, double d) {
+        double[] x0 = t0.values;
+        for (int i = 0; i < x0.length; i++) {
+            t0.values[i] -= d;
+        }
     }
 
     public static Tensor times(Tensor t0, Tensor t1) {
@@ -74,6 +105,20 @@ public class Operators {
         }
         return new Tensor(values, t0.shape);
     }
+    public static void timesAssign(Tensor t0, Tensor t1) {
+        if (!Arrays.equals(t0.shape, t1.shape)) {
+            throw new RuntimeException(Utils.ERROR_SHAPE);
+        }
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] *= t1.values[i];
+        }
+    }
+
+    public static void timesAssign(Tensor t0, double d) {
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] *= d;
+        }
+    }
 
     public static Tensor div(Tensor t0, double d) {
         double[] values = new double[t0.length];
@@ -81,6 +126,21 @@ public class Operators {
             values[i] = t0.values[i] / d;
         }
         return new Tensor(values, t0.shape);
+    }
+
+    public static void divAssign(Tensor t0, Tensor t1) {
+        if (!Arrays.equals(t0.shape, t1.shape)) {
+            throw new RuntimeException(Utils.ERROR_SHAPE);
+        }
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] /= t1.values[i];
+        }
+    }
+
+    public static void divAssign(Tensor t0, double d) {
+        for (int i = 0; i < t0.length; i++) {
+            t0.values[i] /= d;
+        }
     }
 
     public static Tensor neg(Tensor t) {
