@@ -105,6 +105,7 @@ public class Operators {
         }
         return new Tensor(values, t0.shape);
     }
+
     public static void timesAssign(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
             throw new RuntimeException(Utils.ERROR_SHAPE);

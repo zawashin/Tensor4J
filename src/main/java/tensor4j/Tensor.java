@@ -220,6 +220,7 @@ public class Tensor implements Cloneable, Serializable {
     public Tensor plus(double d) {
         return Operators.plus(this, d);
     }
+
     public void plusAssign(Tensor t) {
         Operators.plusAssign(this, t);
     }
