@@ -17,6 +17,7 @@ public class Tensor implements Cloneable, Serializable {
     protected int[] shape;
     protected int length;
     protected int shape1x2x3;
+    protected int shape1x2;
     protected int shape2x3;
     protected double[] values;
 
@@ -27,7 +28,7 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(double[] values) {
         this(new int[]{values.length});
-        this.values = values.clone();
+        System.arraycopy(values, 0, this.values, 0, values.length);
     }
 
     public Tensor(double[][] values) {
@@ -72,16 +73,21 @@ public class Tensor implements Cloneable, Serializable {
         rank = other.rank;
         shape = other.shape.clone();
         shape1x2x3 = other.shape1x2x3;
+        shape1x2 = other.shape1x2;
         shape2x3 = other.shape2x3;
         length = other.length;
         values = other.values.clone();
     }
 
     public Tensor(double[] values, int... shape) {
-        this(shape);
-        rank = Utils.calcRank(shape);
-        if (length != values.length) {
-            throw new RuntimeException(Utils.ERROR_LENGTH);
+        this.rank = shape.length;
+        this.shape = shape.clone();
+        this.length = 1;
+        for (int dim : shape) {
+            this.length *= dim;
+        }
+        if (values.length != this.length) {
+            throw new IllegalArgumentException("Values array length does not match tensor shape.");
         }
         this.values = values.clone();
     }
@@ -98,13 +104,10 @@ public class Tensor implements Cloneable, Serializable {
                 break;
             case 2:
                 length = shape[0] * shape[1];
-                shape1x2x3 = shape[1];
-                shape2x3 = 1;
                 break;
             case 3:
                 length = shape[0] * shape[1] * shape[2];
-                shape1x2x3 = shape[1] * shape[2];
-                shape2x3 = shape[2];
+                shape1x2 = shape[1] * shape[2];
                 break;
             case 4:
                 length = shape[0] * shape[1] * shape[2] * shape[3];
@@ -190,20 +193,20 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.getValue(this, i, j, k, l);
     }
 
-    public void setValue(int i, double value) {
-        Utils.setValue(this, i, value);
+    public void setValue(double value, int i) {
+        Utils.setValue(this, value, i);
     }
 
-    public void setValue(int i, int j, double value) {
-        Utils.setValue(this, i, j, value);
+    public void setValue(double value, int i, int j) {
+        Utils.setValue(this, value, i, j);
     }
 
-    public void setValue(int i, int j, int k, double value) {
-        Utils.setValue(this, i, j, k, value);
+    public void setValue(double value, int i, int j, int k) {
+        Utils.setValue(this, value, i, j, k);
     }
 
-    public void setValue(int i, int j, int k, int l, double value) {
-        Utils.setValue(this, i, j, k, l, value);
+    public void setValue(double value, int i, int j, int k, int l) {
+        Utils.setValue(this, value, i, j, k, l);
     }
 
     public String toString() {
@@ -218,28 +221,12 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.plus(this, d);
     }
 
-    public void plusAssign(Tensor t) {
-        Operators.plusAssign(this, t);
-    }
-
-    public void plusAssign(double d) {
-        Operators.plusAssign(this, d);
-    }
-
     public Tensor minus(Tensor d) {
         return Operators.minus(this, d);
     }
 
     public Tensor minus(double t) {
         return Operators.minus(this, t);
-    }
-
-    public void minusAssign(Tensor d) {
-        Operators.minusAssign(this, d);
-    }
-
-    public void minusAssign(double t) {
-        Operators.minusAssign(this, t);
     }
 
     public Tensor times(Tensor t) {
@@ -250,28 +237,12 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.times(this, d);
     }
 
-    public void timesAssign(Tensor d) {
-        Operators.timesAssign(this, d);
-    }
-
-    public void timesAssign(double t) {
-        Operators.timesAssign(this, t);
-    }
-
     public Tensor div(Tensor t) {
         return Operators.div(this, t);
     }
 
     public Tensor div(double d) {
         return Operators.div(this, d);
-    }
-
-    public void divAssign(Tensor d) {
-        Operators.divAssign(this, d);
-    }
-
-    public void divAssign(double t) {
-        Operators.divAssign(this, t);
     }
 
     public Tensor neg() {
