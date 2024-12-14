@@ -232,6 +232,28 @@ public class Utils {
         return new Tensor(newValues, newShape);
     }
 
+    public static Tensor sumTo(Tensor t, int[] targetShape) {
+        // ブロードキャスト可能か確認
+        int[] broadcastedShape = broadcastShape(t.shape, targetShape);
+        if (!java.util.Arrays.equals(broadcastedShape, targetShape)) {
+            throw new RuntimeException("Shape " + java.util.Arrays.toString(t.shape) +
+                    " cannot be summed to " + java.util.Arrays.toString(targetShape));
+        }
+
+        // 新しいテンソルのデータを作成
+        double[] newValues = new double[getTotalLength(targetShape)];
+
+        // targetShape に従いデータを集約
+        int[] strides = calculateStrides(t.shape);
+        for (int i = 0; i < t.values.length; i++) {
+            int[] indices = getIndicesFromLinearIndex(i, t.shape);
+            int reducedIndex = getLinearIndexFromIndices(indices, targetShape, calculateStrides(targetShape));
+            newValues[reducedIndex] += t.values[i];
+        }
+
+        return new Tensor(newValues, targetShape);
+    }
+
     private static int getTotalLength(int[] shape) {
         int total = 1;
         for (int dim : shape) {
@@ -304,6 +326,7 @@ public class Utils {
 
 
     // ChatGPTで修正
+    /*
     public static Tensor sumTo(Tensor t, int[] shape) {
         double[] values = new double[shape[0] * shape[1]];
         int[] xShape = t.getShape();
@@ -328,6 +351,8 @@ public class Utils {
         }
         return new Tensor(values, shape);
     }
+
+     */
 
     public static String toString(Tensor t) {
         StringBuilder buffer = new StringBuilder();
