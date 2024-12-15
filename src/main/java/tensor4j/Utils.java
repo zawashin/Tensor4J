@@ -13,8 +13,6 @@ public class Utils {
             "Tensor Order is not 0th.",
             "Tensor Order is not 1st.",
             "Tensor Order is not 2nd.",
-            "Tensor Order is not 3rd.",
-            "Tensor Order is not 4th.",
             "Over " + Tensor.RANK_MAX + " Order Tensor is not implemented.",
             "Data Length is not correct",
             "Tensor shape is not match",
@@ -72,79 +70,19 @@ public class Utils {
                     }
                 }
                 break;
-            case 3:
-            case 4:
-                if (axes.length != 2) {
-                    System.err.println("# of Axes must be 0 or 2");
-                    throw new RuntimeException("# of Axes must be 0 or 2");
-                }
             default:
-                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
+                throw new RuntimeException(Utils.ERROR_RANK);
         }
         return tr;
     }
 
-    public static Tensor reshapeSumBackward(Tensor gy, int[] xshape, boolean keepDims, int... axes) {
-        try {
-            int ndim = xshape.length;
-            int[] tupledAxis;
-
-            // Convert axis to array form
-            if (axes == null) {
-                tupledAxis = null;
-            } else if (axes.length == 1) {
-                tupledAxis = new int[]{axes[0]};
-            } else if (axes instanceof int[]) {
-                tupledAxis = axes;
-            } else {
-                throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
-            }
-
-            int[] shape;
-            if (!(ndim == 0 || tupledAxis == null || keepDims)) {
-                // Convert negative indices to positive
-                int[] actualAxis = new int[tupledAxis.length];
-                for (int i = 0; i < tupledAxis.length; i++) {
-                    actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
-                }
-
-                // Sort axis indices
-                Arrays.sort(actualAxis);
-
-                // Convert gy shape to list for easier manipulation
-                List<Integer> shapeList = new ArrayList<>();
-                for (int dim : gy.shape) {
-                    shapeList.add(dim);
-                }
-
-                // Insert 1's at the appropriate positions
-                for (int a : actualAxis) {
-                    shapeList.add(a, 1);
-                }
-
-                // Convert back to array
-                shape = new int[shapeList.size()];
-                for (int i = 0; i < shapeList.size(); i++) {
-                    shape[i] = shapeList.get(i);
-                }
-            } else {
-                shape = gy.shape;
-            }
-
-            // Reshape and return
-            return gy.reshape(shape);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
-        return null;
+    public static Tensor reshapeSumBackward(Tensor gy, int[] xshape, int... axis) {
+         // Reshape and return
+         return gy.reshape(xshape);
     }
 
     public static Tensor reshape(Tensor t, int... shape) {
-        int length = shape[0];
-        for (int i = 1; i < shape.length; i++) {
-            length *= shape[i];
-        }
+        int length = calcLength(shape);
         if (t.length != length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
@@ -158,15 +96,7 @@ public class Utils {
     }
 
     public static Tensor sum(Tensor t, int axis) {
-        return sum(t, axis, false);
-    }
-
-    public static Tensor sum(Tensor t, int axis, boolean keepdims) {
         double[] sums = null;
-        try {
-            if (t.getRank() > 2) {
-                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
-            }
             if (axis < 0) {
                 double sum = 0.0;
                 for (int i = 0; i < t.getLength(); i++) {
@@ -182,112 +112,55 @@ public class Utils {
                         sums[0] += t.getValues()[i];
                     }
                     break;
-                case 2:
-                    if (axis == 0) {
-                        sums = new double[t.getShape(1)];
-                        for (int i = 0; i < t.shape[0]; i++) {
-                            for (int j = 0; j < t.shape[1]; j++) {
-                                sums[j] += Utils.getValue(t, i, j);
-                            }
-                        }
-                    } else if (axis == 1) {
-                        sums = new double[t.getShape(0)];
-                        for (int i = 0; i < t.shape[0]; i++) {
-                            for (int j = 0; j < t.shape[1]; j++) {
-                                sums[i] += Utils.getValue(t, i, j);
-                            }
-                        }
-                    } else {
-                        throw new RuntimeException("Axis must be Less than 2");
-                    }
-                    break;
-                case 3:
-                case 4:
-                    throw new RuntimeException(Utils.NOT_IMPLEMENTED);
                 default:
                     throw new RuntimeException(Utils.ERROR_RANK);
             }
-        } catch (RuntimeException exception) {
-            System.err.println(exception.getMessage());
-            System.exit(0);
-        }
         return new Tensor(sums);
     }
 
     public static Tensor broadcastTo(Tensor t, int[] shape) {
-        // ブロードキャスト可能か確認
-        int[] newShape = broadcastShape(t.shape, shape);
-
-        // 新しいテンソルのデータを作成
-        double[] newValues = new double[getTotalLength(newShape)];
-
-        // ブロードキャストによる値の再配置
-        int[] strides = calculateStrides(t.shape);
-        for (int i = 0; i < newValues.length; i++) {
-            int[] indices = getIndicesFromLinearIndex(i, newShape);
-            int originalIndex = getLinearIndexFromIndices(indices, t.shape, strides);
-            newValues[i] = t.values[originalIndex];
-        }
-
-        return new Tensor(newValues, newShape);
+    return null;
     }
 
-    public static Tensor sumTo(Tensor t, int[] targetShape) {
-        // ブロードキャスト可能か確認
-        int[] broadcastedShape = broadcastShape(t.shape, targetShape);
-        if (!java.util.Arrays.equals(broadcastedShape, targetShape)) {
-            throw new RuntimeException("Shape " + java.util.Arrays.toString(t.shape) +
-                    " cannot be summed to " + java.util.Arrays.toString(targetShape));
+
+    public static int calcLength(int... shape) {
+        int length = 1;
+        for (int j : shape) {
+            length *= j;
         }
-
-        // 新しいテンソルのデータを作成
-        double[] newValues = new double[getTotalLength(targetShape)];
-
-        // targetShape に従いデータを集約
-        int[] strides = calculateStrides(t.shape);
-        for (int i = 0; i < t.values.length; i++) {
-            int[] indices = getIndicesFromLinearIndex(i, t.shape);
-            int reducedIndex = getLinearIndexFromIndices(indices, targetShape, calculateStrides(targetShape));
-            newValues[reducedIndex] += t.values[i];
-        }
-
-        return new Tensor(newValues, targetShape);
+        return length;
     }
 
-    private static int getTotalLength(int[] shape) {
-        int total = 1;
-        for (int dim : shape) {
-            total *= dim;
-        }
-        return total;
-    }
-
-    private static int[] calculateStrides(int[] shape) {
-        int[] strides = new int[shape.length];
-        int stride = 1;
-        for (int i = shape.length - 1; i >= 0; i--) {
-            strides[i] = stride;
-            stride *= shape[i];
-        }
-        return strides;
-    }
-
-    private static int[] getIndicesFromLinearIndex(int linearIndex, int[] shape) {
+    public static int[] getIndices(int[] shape, int index) {
         int[] indices = new int[shape.length];
-        for (int i = shape.length - 1; i >= 0; i--) {
-            indices[i] = linearIndex % shape[i];
-            linearIndex /= shape[i];
+        for(int i = 0; i < shape.length; i++) {
+            switch(i) {
+                case 0:
+                    indices[0] = index / shape[1];
+                    break;
+                case 1:
+                    indices[1] = index % shape[1];
+                    break;
+                default:
+                    throw new RuntimeException(ERROR_RANK);
+            }
         }
         return indices;
     }
 
-    private static int getLinearIndexFromIndices(int[] indices, int[] shape, int[] strides) {
-        int linearIndex = 0;
-        for (int i = 0; i < shape.length; i++) {
-            linearIndex += (indices[i] % shape[i]) * strides[i];
+    public static int getIndex(int[] shape, int[] indices) {
+        switch(shape.length) {
+            case 0:
+                return 0;
+            case 1:
+                return indices[0];
+            case 2:
+                return indices[0] * shape[1] + indices[1];
+            default:
+                throw new RuntimeException(ERROR_RANK);
         }
-        return linearIndex;
     }
+
     // 2つの Tensor を相互的にブロードキャストするサイズを求める
     // ※Tensorは四則演算の際などに自動的にブロードキャストが行われないため明示的にこの関数を利用する
     public static int[] broadcastShape(Tensor t0, Tensor t1) {
@@ -302,17 +175,17 @@ public class Utils {
         int[] castShape = new int[maxLength];
 
         // shapeA と shapeB を後ろ合わせにするためのオフセットを計算
-        int offsetA = maxLength - shape0.length;
-        int offsetB = maxLength - shape1.length;
+        int offset0 = maxLength - shape0.length;
+        int offset1 = maxLength - shape1.length;
 
         // 次元ごとにブロードキャストの判定
         for (int i = maxLength - 1; i >= 0; i--) {
-            int dimA = (i - offsetA >= 0) ? shape0[i - offsetA] : 1;
-            int dimB = (i - offsetB >= 0) ? shape1[i - offsetB] : 1;
+            int dim0 = (i - offset0 >= 0) ? shape0[i - offset0] : 1;
+            int dim1 = (i - offset1 >= 0) ? shape1[i - offset1] : 1;
 
-            if (dimA == dimB || dimA == 1 || dimB == 1) {
+            if (dim0 == dim1 || dim0 == 1 || dim1 == 1) {
                 // ブロードキャスト可能な次元を選択
-                castShape[i] = Math.max(dimA, dimB);
+                castShape[i] = Math.max(dim0, dim1);
             } else {
                 // ブロードキャスト不可能な場合
                 throw new RuntimeException("Shapes " + Arrays.toString(shape0) +
@@ -326,7 +199,6 @@ public class Utils {
 
 
     // ChatGPTで修正
-    /*
     public static Tensor sumTo(Tensor t, int[] shape) {
         double[] values = new double[shape[0] * shape[1]];
         int[] xShape = t.getShape();
@@ -344,15 +216,11 @@ public class Utils {
                     }
                 }
                 break;
-            case 3:
-            case 4:
-                break;
             default:
+                throw  new RuntimeException(ERROR_RANK);
         }
         return new Tensor(values, shape);
     }
-
-     */
 
     public static String toString(Tensor t) {
         StringBuilder buffer = new StringBuilder();
@@ -396,121 +264,31 @@ public class Utils {
                     }
                 }
                 break;
-            case 3:
-                buffer.append("[");
-                for (int k = 0; k < t.shape[2]; k++) {
-                    if (k == 0) {
-                        buffer.append("[");
-                    } else {
-                        buffer.append("  [");
-                    }
-                    for (int i = 0; i < t.shape[0]; i++) {
-                        if (i == 0) {
-                            buffer.append("[");
-                        } else {
-                            buffer.append("  [");
-                        }
-                        for (int j = 0; j < t.shape[1]; j++) {
-                            buffer.append(t.getValue(i, j, k));
-                            //buffer.append(t.values[n++]);
-                            if (j == t.shape[1] - 1) {
-                                buffer.append("]");
-                            } else {
-                                buffer.append(", ");
-                            }
-                        }
-                        if (i == t.shape[0] - 1) {
-                            buffer.append("]");
-                        } else {
-                            buffer.append(",\n");
-                        }
-                    }
-                    if (k == t.shape[2] - 1) {
-                        buffer.append("]");
-                    } else {
-                        buffer.append(",\n");
-                    }
-                }
-                break;
-            case 4:
-                buffer.append("[");
-                for (int l = 0; l < t.shape[3]; l++) {
-                    if (l == 0) {
-                        buffer.append("[");
-                    } else {
-                        buffer.append(" [");
-                    }
-                    for (int k = 0; k < t.shape[2]; k++) {
-                        if (k == 0) {
-                            buffer.append("[");
-                        } else {
-                            buffer.append("  [");
-                        }
-                        for (int i = 0; i < t.shape[0]; i++) {
-                            if (i == 0) {
-                                buffer.append("[");
-                            } else {
-                                buffer.append("   [");
-                            }
-                            for (int j = 0; j < t.shape[1]; j++) {
-                                buffer.append(t.getValue(i, j, k, l));
-                                if (j == t.shape[1] - 1) {
-                                    buffer.append("]");
-                                } else {
-                                    buffer.append(", ");
-                                }
-                            }
-                            if (i == t.shape[0] - 1) {
-                                buffer.append("]");
-                            } else {
-                                buffer.append(",\n");
-                            }
-                        }
-                        if (k == t.shape[2] - 1) {
-                            buffer.append("]");
-                        } else {
-                            buffer.append(",\n");
-                        }
-                    }
-                    if (l == t.shape[3] - 1) {
-                        buffer.append("]");
-                    } else {
-                        buffer.append(",\n");
-                    }
-                }
-                break;
             default:
                 throw new RuntimeException(ERROR_RANK);
         }
         return buffer.toString();
     }
 
-    public static double getValue(Tensor t, int... indeces) {
-        if (indeces.length == 0) {
+    public static double getValue(Tensor t, int... indices) {
+        if (indices.length == 0) {
             return t.values[0];
-        } else if (indeces.length == 1) {
-            return t.values[indeces[0]];
-        } else if (indeces.length == 2) {
-            return t.values[indeces[0] * t.shape[1] + indeces[1]];
-        } else if (indeces.length == 3) {
-            return t.values[indeces[0] * t.shape1x2 + indeces[1] * t.shape[2] + indeces[2]];
-        } else if (indeces.length == 4) {
-            return t.values[indeces[0] * t.shape1x2x3 + indeces[1] * t.shape2x3 + indeces[2] * t.shape[3] + indeces[3]];
+        } else if (indices.length == 1) {
+            return t.values[indices[0]];
+        } else if (indices.length == 2) {
+            return t.values[indices[0] * t.shape[1] + indices[1]];
+        } else {
+            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }
-        throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
     }
 
-    public static void setValue(Tensor t, double value, int... indeces) {
+    public static void setValue(Tensor t, double value, int... indices) {
         if (t.rank == 0) {
             t.values[0] = value;
         } else if (t.rank == 1) {
-            t.values[indeces[0]] = value;
+            t.values[indices[0]] = value;
         } else if (t.rank == 2) {
-            t.values[indeces[0] * t.shape[1] + indeces[1]] = value;
-        } else if (t.rank == 3) {
-            t.values[indeces[0] * t.shape1x2 + indeces[1] * t.shape[2] + indeces[2]] = value;
-        } else if (t.rank == 4) {
-            t.values[indeces[0] * t.shape1x2x3 + indeces[1] * t.shape2x3 + indeces[2] * t.shape[3] + indeces[3]] = value;
+            t.values[indices[0] * t.shape[1] + indices[1]] = value;
         } else {
             throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }

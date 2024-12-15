@@ -12,13 +12,10 @@ import java.util.List;
 public class Tensor implements Cloneable, Serializable {
     @Serial
     private static final long serialVersionUID = -5871953224191632639L;
-    public static int RANK_MAX = 4;
+    public static int RANK_MAX = 2;
     protected int rank;
     protected int[] shape;
     protected int length;
-    protected int shape1x2x3;
-    protected int shape1x2;
-    protected int shape2x3;
     protected double[] values;
 
     public Tensor(double value) {
@@ -41,58 +38,27 @@ public class Tensor implements Cloneable, Serializable {
         }
     }
 
-    public Tensor(double[][][] values) {
-        this(values.length, values[0].length, values[0][0].length);
-        rank = 3;
-        int n = 0;
-        for (double[][] value : values) {
-            for (int j = 0; j < values[0].length; j++) {
-                for (int k = 0; k < values[0][0].length; k++) {
-                    this.values[n++] = value[j][k];
-                }
-            }
-        }
-    }
-
-    public Tensor(double[][][][] values) {
-        this(values.length, values[0].length, values[0][0].length, values[0][0][0].length);
-        rank = 4;
-        int n = 0;
-        for (double[][][] value : values) {
-            for (int j = 0; j < values[0].length; j++) {
-                for (int k = 0; k < values[0][0].length; k++) {
-                    for (int l = 0; l < values[0][0][0].length; l++) {
-                        this.values[n++] = value[j][k][l];
-                    }
-                }
-            }
-        }
-    }
-
     public Tensor(Tensor other) {
         rank = other.rank;
         shape = other.shape.clone();
-        shape1x2x3 = other.shape1x2x3;
-        shape1x2 = other.shape1x2;
-        shape2x3 = other.shape2x3;
         length = other.length;
         values = other.values.clone();
     }
 
     public Tensor(double[] values, int... shape) {
+        if(shape.length > RANK_MAX) {
+            throw new RuntimeException(Utils.ERROR_RANK);
+        }
         this.rank = shape.length;
         this.shape = shape.clone();
-        this.length = 1;
-        for (int dim : shape) {
-            this.length *= dim;
-        }
+        this.length = Utils.calcLength(shape);
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shape.");
         }
         this.values = values.clone();
     }
 
-    protected Tensor(int... shape) {
+    public Tensor(int... shape) {
         this.shape = shape.clone();
         rank = shape.length;
         switch (rank) {
@@ -105,21 +71,11 @@ public class Tensor implements Cloneable, Serializable {
             case 2:
                 length = shape[0] * shape[1];
                 break;
-            case 3:
-                length = shape[0] * shape[1] * shape[2];
-                shape1x2 = shape[1] * shape[2];
-                break;
-            case 4:
-                length = shape[0] * shape[1] * shape[2] * shape[3];
-                shape1x2x3 = shape[1] * shape[2] * shape[3];
-                shape2x3 = shape[2] * shape[3];
-                break;
             default:
                 throw new RuntimeException(Utils.ERROR_RANK);
         }
         values = new double[length];
     }
-
 
     public int getRank() {
         return rank;
@@ -141,22 +97,6 @@ public class Tensor implements Cloneable, Serializable {
         return values;
     }
 
-    public int getImax() {
-        return shape[0];
-    }
-
-    public int getJmax() {
-        return shape[1];
-    }
-
-    public int getKmax() {
-        return shape[2];
-    }
-
-    public int getLmax() {
-        return shape[3];
-    }
-
     public Tensor clone() {
         Tensor clone;
         try {
@@ -169,12 +109,12 @@ public class Tensor implements Cloneable, Serializable {
         return clone;
     }
 
-    public double getValue() {
-        return Utils.getValue(this);
+    public double getValue(int... indices) {
+        return Utils.getValue(this, indices);
     }
 
-    public void setValue(double value) {
-        Utils.setValue(this, value);
+    public double getValue() {
+        return Utils.getValue(this);
     }
 
     public double getValue(int i) {
@@ -185,12 +125,12 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.getValue(this, i, j);
     }
 
-    public double getValue(int i, int j, int k) {
-        return Utils.getValue(this, i, j, k);
+    public void setValue(double value) {
+        Utils.setValue(this, value);
     }
 
-    public double getValue(int i, int j, int k, int l) {
-        return Utils.getValue(this, i, j, k, l);
+    public void setValue(double value, int... indices) {
+        Utils.setValue(this, value, indices);
     }
 
     public void setValue(double value, int i) {
@@ -199,14 +139,6 @@ public class Tensor implements Cloneable, Serializable {
 
     public void setValue(double value, int i, int j) {
         Utils.setValue(this, value, i, j);
-    }
-
-    public void setValue(double value, int i, int j, int k) {
-        Utils.setValue(this, value, i, j, k);
-    }
-
-    public void setValue(double value, int i, int j, int k, int l) {
-        Utils.setValue(this, value, i, j, k, l);
     }
 
     public String toString() {
@@ -330,16 +262,16 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor sum() {
-        return Utils.sum(this, -1, false);
+        return Utils.sum(this, -1);
     }
 
     public Tensor sum(int axis) {
-        return Utils.sum(this, axis, false);
+        return Utils.sum(this, axis);
     }
 
 
     public Tensor sum(int axis, boolean keepidm) {
-        return Utils.sum(this, axis, keepidm);
+        return Utils.sum(this, axis);
     }
 
     public Tensor broadcastTo(int[] shape) {
@@ -350,7 +282,7 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.sumTo(this, shape);
     }
 
-    public Tensor reshapeSumBackward(Tensor gy, int[] xshape, int axis, boolean keepdims) {
+    public Tensor reshapeSumBackward(Tensor gy, int[] xshape, int axis) {
         //    public static Variable reshapeSumBackward(Variable gy, int[] xShape, Object axis, boolean keepdims) {
         int ndim = xshape.length;
         int[] tupledAxis = null;
@@ -370,7 +302,7 @@ public class Tensor implements Cloneable, Serializable {
          */
 
         int[] shape;
-        if (!(ndim == 0 || tupledAxis == null || keepdims)) {
+        if (!(ndim == 0 || tupledAxis == null)) {
             // Convert negative indices to positive
             int[] actualAxis = new int[tupledAxis.length];
             for (int i = 0; i < tupledAxis.length; i++) {

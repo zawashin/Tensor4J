@@ -10,13 +10,11 @@
 
 ## 現状
 
-- 四則演算、数学関数を除くテンソル操作は深層学習で必要な2階までしか実装していない
-  - 4階までは、**必要に応じて**対応は可能(なはず)
+- 深層学習で必要な2階までしか実装していない
   - 四則演算、数学関数
     - Operatorsクラス
   - その他の操作
     - Utilsクラス
-  - 例外処理をしてない
 
 ## 参考資料
 - [Deepnetts Community Edition](https://github.com/deepnetts/deepnetts-communityedition) 

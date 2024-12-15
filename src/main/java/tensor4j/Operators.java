@@ -247,9 +247,6 @@ public class Operators {
                             values[i] = value;
                         }
                         break;
-                    case 3:
-                    case 4:
-                        throw new RuntimeException(Utils.NOT_IMPLEMENTED);
                     default:
                         throw new RuntimeException(Utils.ERROR_SHAPE);
                 }
@@ -260,8 +257,8 @@ public class Operators {
                         return Operators.times(t0, t1.values[0]);
                     case 1:
                         if (t0.shape[1] != t1.shape[0]) {
-                            System.out.println(Arrays.toString(t0.getShape()));
-                            System.out.println(Arrays.toString(t1.getShape()));
+                            System.out.print(Arrays.toString(t0.getShape()));
+                            System.out.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
                         shape = new int[]{t0.shape[0]};
@@ -295,16 +292,10 @@ public class Operators {
                             }
                         }
                         break;
-                    case 3:
-                    case 4:
-                        throw new RuntimeException(Utils.NOT_IMPLEMENTED);
                     default:
                         throw new RuntimeException(Utils.ERROR_RANK);
                 }
                 break;
-            case 3:
-            case 4:
-                throw new RuntimeException(Utils.NOT_IMPLEMENTED);
             default:
                 throw new RuntimeException(Utils.ERROR_SHAPE);
         }
@@ -313,9 +304,9 @@ public class Operators {
 
     public static Tensor mse(Tensor t0, Tensor t1) {
         if (t0.length != t1.length) {
-            System.out.println(Arrays.toString(t0.shape));
+            System.out.print(Arrays.toString(t0.shape));
             System.out.println(Arrays.toString(t1.shape));
-            throw new RuntimeException("Tensor Size Error");
+            throw new RuntimeException("Tensor Shape Error");
         }
         int length = t0.length;
         double value = 0.0;
