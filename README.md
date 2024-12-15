@@ -5,12 +5,9 @@
   」のフレームワーク[DezeroをJavaで実装](https://github.com/zawashin/DeZero4j/tree/main)するためにNumPyの代用として実装してみる。
 
 ### 方針
-- 4階テンソルまで考慮
-  - [Deepnetts Community Edition](https://github.com/deepnetts/deepnetts-communityedition)の[Tensorクラス](https://github.com/deepnetts/deepnetts-communityedition/blob/community-visrec/deepnetts-core/src/main/java/deepnetts/util/Tensor.java)に倣う
+- 深層学習で必要な2階までしか実装していない
 
 ## 現状
-
-- 深層学習で必要な2階までしか実装していない
   - 四則演算、数学関数
     - Operatorsクラス
   - その他の操作

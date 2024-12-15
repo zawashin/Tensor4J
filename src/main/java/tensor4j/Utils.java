@@ -1,8 +1,6 @@
 package tensor4j;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -77,8 +75,8 @@ public class Utils {
     }
 
     public static Tensor reshapeSumBackward(Tensor gy, int[] xshape, int... axis) {
-         // Reshape and return
-         return gy.reshape(xshape);
+        // Reshape and return
+        return gy.reshape(xshape);
     }
 
     public static Tensor reshape(Tensor t, int... shape) {
@@ -97,29 +95,29 @@ public class Utils {
 
     public static Tensor sum(Tensor t, int axis) {
         double[] sums = null;
-            if (axis < 0) {
-                double sum = 0.0;
+        if (axis < 0) {
+            double sum = 0.0;
+            for (int i = 0; i < t.getLength(); i++) {
+                sum += t.getValues()[i];
+            }
+            return new Tensor(sum);
+        }
+        switch (t.getRank()) {
+            case 0:
+            case 1:
+                sums = new double[1];
                 for (int i = 0; i < t.getLength(); i++) {
-                    sum += t.getValues()[i];
+                    sums[0] += t.getValues()[i];
                 }
-                return new Tensor(sum);
-            }
-            switch (t.getRank()) {
-                case 0:
-                case 1:
-                    sums = new double[1];
-                    for (int i = 0; i < t.getLength(); i++) {
-                        sums[0] += t.getValues()[i];
-                    }
-                    break;
-                default:
-                    throw new RuntimeException(Utils.ERROR_RANK);
-            }
+                break;
+            default:
+                throw new RuntimeException(Utils.ERROR_RANK);
+        }
         return new Tensor(sums);
     }
 
     public static Tensor broadcastTo(Tensor t, int[] shape) {
-    return null;
+        return null;
     }
 
 
@@ -133,8 +131,8 @@ public class Utils {
 
     public static int[] getIndices(int[] shape, int index) {
         int[] indices = new int[shape.length];
-        for(int i = 0; i < shape.length; i++) {
-            switch(i) {
+        for (int i = 0; i < shape.length; i++) {
+            switch (i) {
                 case 0:
                     indices[0] = index / shape[1];
                     break;
@@ -149,7 +147,7 @@ public class Utils {
     }
 
     public static int getIndex(int[] shape, int[] indices) {
-        switch(shape.length) {
+        switch (shape.length) {
             case 0:
                 return 0;
             case 1:
@@ -217,7 +215,7 @@ public class Utils {
                 }
                 break;
             default:
-                throw  new RuntimeException(ERROR_RANK);
+                throw new RuntimeException(ERROR_RANK);
         }
         return new Tensor(values, shape);
     }
