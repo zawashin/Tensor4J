@@ -72,43 +72,9 @@ public class Utils {
         return tr;
     }
 
-    public static Tensor reshapeSumBackward(Tensor gy, int[] xShape, int axis) {
-        /*
-        switch (axis) {
-            case -1:
-            case 2:
-                Tensor t = Utils.create(xShape);
-                Arrays.fill(t.values, gy.values[0]);
-                return t;
-            case 0:
-                t = Utils.create(xShape);
-                for (int i = 0; i < xShape[0]; i++) {
-                    for (int j = 0; j < xShape[1]; j++) {
-                        double value = gy.getValue(j);
-                        t.setValue(value, i, j);
-                    }
-                }
-                return t;
-                //return gy.broadcastTo(xShape);
-            case 1:
-                t = Utils.create(xShape);
-                for (int i = 0; i < xShape[0]; i++) {
-                    double value = gy.getValue(i);
-                    for (int j = 0; j < xShape[1]; j++) {
-                        t.setValue(value, i, j);
-                    }
-                }
-                return t;
-            default:
-                throw new RuntimeException(Utils.ERROR_RANK);
-        }
-
-         */
-        return gy.clone();
-    }
 
     public static Tensor reshape(Tensor t, int... shapes) {
-        int length = calcLength(shapes);
+        int length = getLength(shapes);
         if (t.length != length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
@@ -157,8 +123,43 @@ public class Utils {
         return new Tensor(sums);
     }
 
+    public static Tensor reshapeSumBackward(Tensor gy, int[] xShape, int axis) {
+        /*
+        switch (axis) {
+            case -1:
+            case 2:
+                Tensor t = Utils.create(xShape);
+                Arrays.fill(t.values, gy.values[0]);
+                return t;
+            case 0:
+                t = Utils.create(xShape);
+                for (int i = 0; i < xShape[0]; i++) {
+                    for (int j = 0; j < xShape[1]; j++) {
+                        double value = gy.getValue(j);
+                        t.setValue(value, i, j);
+                    }
+                }
+                return t;
+                //return gy.broadcastTo(xShape);
+            case 1:
+                t = Utils.create(xShape);
+                for (int i = 0; i < xShape[0]; i++) {
+                    double value = gy.getValue(i);
+                    for (int j = 0; j < xShape[1]; j++) {
+                        t.setValue(value, i, j);
+                    }
+                }
+                return t;
+            default:
+                throw new RuntimeException(Utils.ERROR_RANK);
+        }
+
+         */
+        return gy.clone();
+    }
+
     public static Tensor broadcastTo(Tensor t, int[] shapes) {
-        int length = Utils.calcLength(shapes);
+        int length = Utils.getLength(shapes);
         double[] values = new double[length];
         int[] xShape = t.getShape();
         int xShape0 = xShape[0];
@@ -237,7 +238,7 @@ public class Utils {
         return new Tensor(values, shapes);
     }
 
-    public static int calcLength(int... shapes) {
+    public static int getLength(int... shapes) {
         int length = 1;
         for (int shape : shapes) {
             length *= shape;
@@ -272,6 +273,30 @@ public class Utils {
                 return indices[0] * shapes[1] + indices[1];
             default:
                 throw new RuntimeException(ERROR_RANK);
+        }
+    }
+
+    public static double getValue(Tensor t, int... indices) {
+        if (indices.length == 0) {
+            return t.values[0];
+        } else if (indices.length == 1) {
+            return t.values[indices[0]];
+        } else if (indices.length == 2) {
+            return t.values[indices[0] * t.shapes[1] + indices[1]];
+        } else {
+            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
+        }
+    }
+
+    public static void setValue(Tensor t, double value, int... indices) {
+        if (t.rank == 0) {
+            t.values[0] = value;
+        } else if (t.rank == 1) {
+            t.values[indices[0]] = value;
+        } else if (t.rank == 2) {
+            t.values[indices[0] * t.shapes[1] + indices[1]] = value;
+        } else {
+            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }
     }
 
@@ -322,29 +347,4 @@ public class Utils {
         }
         return buffer.toString();
     }
-
-    public static double getValue(Tensor t, int... indices) {
-        if (indices.length == 0) {
-            return t.values[0];
-        } else if (indices.length == 1) {
-            return t.values[indices[0]];
-        } else if (indices.length == 2) {
-            return t.values[indices[0] * t.shapes[1] + indices[1]];
-        } else {
-            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
-        }
-    }
-
-    public static void setValue(Tensor t, double value, int... indices) {
-        if (t.rank == 0) {
-            t.values[0] = value;
-        } else if (t.rank == 1) {
-            t.values[indices[0]] = value;
-        } else if (t.rank == 2) {
-            t.values[indices[0] * t.shapes[1] + indices[1]] = value;
-        } else {
-            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
-        }
-    }
-
 }

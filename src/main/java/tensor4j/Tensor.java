@@ -51,7 +51,7 @@ public class Tensor implements Cloneable, Serializable {
         }
         this.rank = shapes.length;
         this.shapes = shapes.clone();
-        this.length = Utils.calcLength(shapes);
+        this.length = Utils.getLength(shapes);
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shapes.");
         }
