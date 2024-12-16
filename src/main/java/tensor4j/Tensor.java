@@ -61,19 +61,10 @@ public class Tensor implements Cloneable, Serializable {
     public Tensor(int... shapes) {
         this.shapes = shapes.clone();
         rank = shapes.length;
-        switch (rank) {
-            case 0:
-                length = 1;
-                break;
-            case 1:
-                length = shapes[0];
-                break;
-            case 2:
-                length = shapes[0] * shapes[1];
-                break;
-            default:
-                throw new RuntimeException(Utils.ERROR_RANK);
+        if (rank > RANK_MAX) {
+            throw new RuntimeException(Utils.ERROR_RANK);
         }
+        length = Utils.getLength(shapes);
         values = new double[length];
     }
 
@@ -85,7 +76,7 @@ public class Tensor implements Cloneable, Serializable {
         return length;
     }
 
-    public int[] getShape() {
+    public int[] getShapes() {
         return shapes;
     }
 
@@ -245,10 +236,6 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.transpose(this);
     }
 
-    public Tensor transpose(int... axes) {
-        return Utils.transpose(this, axes);
-    }
-
     public Tensor dot(Tensor t) {
         return Operators.dot(this, t);
     }
@@ -266,11 +253,6 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor sum(int axis) {
-        return Utils.sum(this, axis);
-    }
-
-
-    public Tensor sum(int axis, boolean keepidm) {
         return Utils.sum(this, axis);
     }
 

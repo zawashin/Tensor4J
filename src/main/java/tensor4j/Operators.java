@@ -228,8 +228,8 @@ public class Operators {
                         break;
                     case 2:
                         if (t0.shapes[0] != t1.shapes[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.out.print(Arrays.toString(t0.getShapes()));
+                            System.out.print(Arrays.toString(t1.getShapes()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
                         shapes = new int[]{t1.shapes[1]};
@@ -254,8 +254,8 @@ public class Operators {
                         return Operators.multiply(t0, t1.values[0]);
                     case 1:
                         if (t0.shapes[1] != t1.shapes[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.out.print(Arrays.toString(t0.getShapes()));
+                            System.out.print(Arrays.toString(t1.getShapes()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
                         shapes = new int[]{t0.shapes[0]};
@@ -270,8 +270,8 @@ public class Operators {
                         break;
                     case 2:
                         if (t0.shapes[1] != t1.shapes[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.out.print(Arrays.toString(t0.getShapes()));
+                            System.out.print(Arrays.toString(t1.getShapes()));
                             throw new RuntimeException("Tensor Shape Error");
                         }
                         length = t0.getShape(0) * t1.getShape(1);

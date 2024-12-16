@@ -98,13 +98,7 @@ public class Utils {
             }
             return new Tensor(sums[0]);
         } else if (t.rank == 2) {
-            if (axis == -1 || axis >= Tensor.RANK_MAX) {
-                sums = new double[1];
-                for (int i = 0; i < t.getLength(); i++) {
-                    sums[0] += t.getValues()[i];
-                }
-                return new Tensor(sums[0]);
-            } else if (axis == 0) {
+            if (axis == 0) {
                 sums = new double[t.shapes[1]];
                 for (int i = 0; i < t.shapes[0]; i++) {
                     for (int j = 0; j < t.shapes[1]; j++) {
@@ -118,50 +112,20 @@ public class Utils {
                         sums[i] += t.getValue(i, j);
                     }
                 }
+            } else {
+                sums = new double[1];
+                for (int i = 0; i < t.getLength(); i++) {
+                    sums[0] += t.getValues()[i];
+                }
+                return new Tensor(sums[0]);
             }
         }
         return new Tensor(sums);
     }
-
-    public static Tensor reshapeSumBackward(Tensor gy, int[] xShape, int axis) {
-        /*
-        switch (axis) {
-            case -1:
-            case 2:
-                Tensor t = Utils.create(xShape);
-                Arrays.fill(t.values, gy.values[0]);
-                return t;
-            case 0:
-                t = Utils.create(xShape);
-                for (int i = 0; i < xShape[0]; i++) {
-                    for (int j = 0; j < xShape[1]; j++) {
-                        double value = gy.getValue(j);
-                        t.setValue(value, i, j);
-                    }
-                }
-                return t;
-                //return gy.broadcastTo(xShape);
-            case 1:
-                t = Utils.create(xShape);
-                for (int i = 0; i < xShape[0]; i++) {
-                    double value = gy.getValue(i);
-                    for (int j = 0; j < xShape[1]; j++) {
-                        t.setValue(value, i, j);
-                    }
-                }
-                return t;
-            default:
-                throw new RuntimeException(Utils.ERROR_RANK);
-        }
-
-         */
-        return gy.clone();
-    }
-
     public static Tensor broadcastTo(Tensor t, int[] shapes) {
         int length = Utils.getLength(shapes);
         double[] values = new double[length];
-        int[] xShape = t.getShape();
+        int[] xShape = t.getShapes();
         int xShape0 = xShape[0];
         int xShape1 = xShape[1];
         int shape0 = shapes[0];
@@ -172,6 +136,7 @@ public class Utils {
             for (int j = 0; j < shape1; j++) {
                 int i_ = (xShape0 == 1 || xShape0 == shape0) ? Math.min(i, xShape0 - 1) : i % xShape0;
                 int j_ = (xShape1 == 1 || xShape1 == shape1) ? Math.min(j, xShape1 - 1) : j % xShape1;
+                int[] indices_;
                 values[n++] = t.getValue(i_, j_);
             }
         }
@@ -184,29 +149,38 @@ public class Utils {
         return broadcastShape(t0.shapes, t1.shapes);
     }
 
-    public static int[] broadcastShape(int[] shape0, int[] shape1) {
+    public static int[] broadcastShape(Tensor t0, int[] shapes1) {
+        return broadcastShape(t0.shapes, shapes1);
+    }
+
+    public static int[] broadcastShape(int[] shapes0, Tensor t1) {
+        return broadcastShape(shapes0, t1.shapes);
+    }
+
+
+    public static int[] broadcastShape(int[] shapes0, int[] shapes1) {
         // 最大の次元数を取得
-        int maxLength = Math.max(shape0.length, shape1.length);
+        int maxLength = Math.max(shapes0.length, shapes1.length);
 
         // 結果の形状を格納する配列
         int[] castShape = new int[maxLength];
 
         // shapeA と shapeB を後ろ合わせにするためのオフセットを計算
-        int offset0 = maxLength - shape0.length;
-        int offset1 = maxLength - shape1.length;
+        int offset0 = maxLength - shapes0.length;
+        int offset1 = maxLength - shapes1.length;
 
         // 次元ごとにブロードキャストの判定
         for (int i = maxLength - 1; i >= 0; i--) {
-            int dim0 = (i - offset0 >= 0) ? shape0[i - offset0] : 1;
-            int dim1 = (i - offset1 >= 0) ? shape1[i - offset1] : 1;
+            int dim0 = (i - offset0 >= 0) ? shapes0[i - offset0] : 1;
+            int dim1 = (i - offset1 >= 0) ? shapes1[i - offset1] : 1;
 
             if (dim0 == dim1 || dim0 == 1 || dim1 == 1) {
                 // ブロードキャスト可能な次元を選択
                 castShape[i] = Math.max(dim0, dim1);
             } else {
                 // ブロードキャスト不可能な場合
-                throw new RuntimeException("Shapes " + Arrays.toString(shape0) +
-                        " and " + Arrays.toString(shape1) +
+                throw new RuntimeException("Shapes " + Arrays.toString(shapes0) +
+                        " and " + Arrays.toString(shapes1) +
                         " are not broadcastable.");
             }
         }
@@ -217,7 +191,7 @@ public class Utils {
     // ChatGPTで修正
     public static Tensor sumTo(Tensor t, int[] shapes) {
         double[] values = new double[shapes[0] * shapes[1]];
-        int[] xShape = t.getShape();
+        int[] xShape = t.getShapes();
 
         switch (t.rank) {
             case 0:
@@ -263,7 +237,7 @@ public class Utils {
         return indices;
     }
 
-    public static int getIndex(int[] shapes, int[] indices) {
+    public static int getIndex(int[] shapes, int... indices) {
         switch (shapes.length) {
             case 0:
                 return 0;
