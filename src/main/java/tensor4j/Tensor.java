@@ -14,7 +14,7 @@ public class Tensor implements Cloneable, Serializable {
     private static final long serialVersionUID = -5871953224191632639L;
     public static int RANK_MAX = 2;
     protected int rank;
-    protected int[] shape;
+    protected int[] shapes;
     protected int length;
     protected double[] values;
 
@@ -40,36 +40,36 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(Tensor other) {
         rank = other.rank;
-        shape = other.shape.clone();
+        shapes = other.shapes.clone();
         length = other.length;
         values = other.values.clone();
     }
 
-    public Tensor(double[] values, int... shape) {
-        if(shape.length > RANK_MAX) {
+    public Tensor(double[] values, int... shapes) {
+        if (shapes.length > RANK_MAX) {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
-        this.rank = shape.length;
-        this.shape = shape.clone();
-        this.length = Utils.calcLength(shape);
+        this.rank = shapes.length;
+        this.shapes = shapes.clone();
+        this.length = Utils.calcLength(shapes);
         if (values.length != this.length) {
-            throw new IllegalArgumentException("Values array length does not match tensor shape.");
+            throw new IllegalArgumentException("Values array length does not match tensor shapes.");
         }
         this.values = values.clone();
     }
 
-    public Tensor(int... shape) {
-        this.shape = shape.clone();
-        rank = shape.length;
+    public Tensor(int... shapes) {
+        this.shapes = shapes.clone();
+        rank = shapes.length;
         switch (rank) {
             case 0:
                 length = 1;
                 break;
             case 1:
-                length = shape[0];
+                length = shapes[0];
                 break;
             case 2:
-                length = shape[0] * shape[1];
+                length = shapes[0] * shapes[1];
                 break;
             default:
                 throw new RuntimeException(Utils.ERROR_RANK);
@@ -86,11 +86,11 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public int[] getShape() {
-        return shape;
+        return shapes;
     }
 
     public int getShape(int n) {
-        return shape[n];
+        return shapes[n];
     }
 
     public double[] getValues() {
@@ -105,7 +105,7 @@ public class Tensor implements Cloneable, Serializable {
             throw new RuntimeException(e);
         }
         clone.values = this.values.clone();
-        clone.shape = this.shape.clone();
+        clone.shapes = this.shapes.clone();
         return clone;
     }
 
@@ -145,68 +145,68 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.toString(this);
     }
 
-    public Tensor plus(Tensor t) {
-        return Operators.plus(this, t);
+    public Tensor add(Tensor t) {
+        return Operators.add(this, t);
     }
 
-    public Tensor plus(double d) {
-        return Operators.plus(this, d);
+    public Tensor add(double d) {
+        return Operators.add(this, d);
     }
 
-    public void plusAssign(Tensor t) {
-        Operators.plusAssign(this, t);
+    public void addAssign(Tensor t) {
+        Operators.addAssign(this, t);
     }
 
-    public void plusAssign(double d) {
-        Operators.plusAssign(this, d);
+    public void addAssign(double d) {
+        Operators.addAssign(this, d);
     }
 
-    public Tensor minus(Tensor d) {
-        return Operators.minus(this, d);
+    public Tensor subtract(Tensor d) {
+        return Operators.subtract(this, d);
     }
 
-    public Tensor minus(double t) {
-        return Operators.minus(this, t);
+    public Tensor subtract(double t) {
+        return Operators.subtract(this, t);
     }
 
-    public void minusAssign(Tensor d) {
-        Operators.minusAssign(this, d);
+    public void subtractAssign(Tensor d) {
+        Operators.subtractAssign(this, d);
     }
 
-    public void minusAssign(double t) {
-        Operators.minusAssign(this, t);
+    public void subtractAssign(double t) {
+        Operators.subtractAssign(this, t);
     }
 
-    public Tensor times(Tensor t) {
-        return Operators.times(this, t);
+    public Tensor multiply(Tensor t) {
+        return Operators.multiply(this, t);
     }
 
-    public Tensor times(double d) {
-        return Operators.times(this, d);
+    public Tensor multiply(double d) {
+        return Operators.multiply(this, d);
     }
 
-    public void timesAssign(Tensor d) {
-        Operators.timesAssign(this, d);
+    public void multiplyAssign(Tensor d) {
+        Operators.multiplyAssign(this, d);
     }
 
-    public void timesAssign(double t) {
-        Operators.timesAssign(this, t);
+    public void multiplyAssign(double t) {
+        Operators.multiplyAssign(this, t);
     }
 
-    public Tensor div(Tensor t) {
-        return Operators.div(this, t);
+    public Tensor divide(Tensor t) {
+        return Operators.divide(this, t);
     }
 
-    public Tensor div(double d) {
-        return Operators.div(this, d);
+    public Tensor divide(double d) {
+        return Operators.divide(this, d);
     }
 
-    public void divAssign(Tensor d) {
-        Operators.divAssign(this, d);
+    public void divideAssign(Tensor d) {
+        Operators.divideAssign(this, d);
     }
 
-    public void divAssign(double t) {
-        Operators.divAssign(this, t);
+    public void divideAssign(double t) {
+        Operators.divideAssign(this, t);
     }
 
     public Tensor neg() {
@@ -257,8 +257,8 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.mse(this, t);
     }
 
-    public Tensor reshape(int[] shape) {
-        return Utils.reshape(this, shape);
+    public Tensor reshape(int[] shapes) {
+        return Utils.reshape(this, shapes);
     }
 
     public Tensor sum() {
@@ -274,12 +274,12 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.sum(this, axis);
     }
 
-    public Tensor broadcastTo(int[] shape) {
-        return Utils.broadcastTo(this, shape);
+    public Tensor broadcastTo(int[] shapes) {
+        return Utils.broadcastTo(this, shapes);
     }
 
-    public Tensor sumTo(int[] shape) {
-        return Utils.sumTo(this, shape);
+    public Tensor sumTo(int[] shapes) {
+        return Utils.sumTo(this, shapes);
     }
 
     public Tensor reshapeSumBackward(Tensor gy, int[] xshape, int axis) {
@@ -301,7 +301,7 @@ public class Tensor implements Cloneable, Serializable {
 
          */
 
-        int[] shape;
+        int[] shapes;
         if (!(ndim == 0 || tupledAxis == null)) {
             // Convert negative indices to positive
             int[] actualAxis = new int[tupledAxis.length];
@@ -312,9 +312,9 @@ public class Tensor implements Cloneable, Serializable {
             // Sort axis indices
             Arrays.sort(actualAxis);
 
-            // Convert gy shape to list for easier manipulation
+            // Convert gy shapes to list for easier manipulation
             List<Integer> shapeList = new ArrayList<>();
-            for (int dim : gy.shape) {
+            for (int dim : gy.shapes) {
                 shapeList.add(dim);
             }
 
@@ -324,15 +324,15 @@ public class Tensor implements Cloneable, Serializable {
             }
 
             // Convert back to array
-            shape = new int[shapeList.size()];
+            shapes = new int[shapeList.size()];
             for (int i = 0; i < shapeList.size(); i++) {
-                shape[i] = shapeList.get(i);
+                shapes[i] = shapeList.get(i);
             }
         } else {
-            shape = gy.shape;
+            shapes = gy.shapes;
         }
 
         // Reshape and return
-        return gy.reshape(shape);
+        return gy.reshape(shapes);
     }
 }
