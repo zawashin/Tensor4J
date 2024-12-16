@@ -245,10 +245,6 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.transpose(this);
     }
 
-    public Tensor transpose(int... axes) {
-        return Utils.transpose(this, axes);
-    }
-
     public Tensor dot(Tensor t) {
         return Operators.dot(this, t);
     }
@@ -266,11 +262,6 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor sum(int axis) {
-        return Utils.sum(this, axis);
-    }
-
-
-    public Tensor sum(int axis, boolean keepidm) {
         return Utils.sum(this, axis);
     }
 
