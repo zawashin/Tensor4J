@@ -59,9 +59,9 @@ public class Utils {
                 if (axes.length != 0) {
                     throw new RuntimeException();
                 }
-                tr = Utils.create(t.shapes[1], t.shapes[0]);
-                for (int i = 0; i < t.shapes[0]; i++) {
-                    for (int j = 0; j < t.shapes[1]; j++) {
+                tr = Utils.create(t.shape[1], t.shape[0]);
+                for (int i = 0; i < t.shape[0]; i++) {
+                    for (int j = 0; j < t.shape[1]; j++) {
                         tr.setValue(t.getValue(i, j), j, i);
                     }
                 }
@@ -99,16 +99,16 @@ public class Utils {
             return new Tensor(sums[0]);
         } else if (t.rank == 2) {
             if (axis == 0) {
-                sums = new double[t.shapes[1]];
-                for (int i = 0; i < t.shapes[0]; i++) {
-                    for (int j = 0; j < t.shapes[1]; j++) {
+                sums = new double[t.shape[1]];
+                for (int i = 0; i < t.shape[0]; i++) {
+                    for (int j = 0; j < t.shape[1]; j++) {
                         sums[j] += t.getValue(i, j);
                     }
                 }
             } else if (axis == 1) {
-                sums = new double[t.shapes[0]];
-                for (int i = 0; i < t.shapes[0]; i++) {
-                    for (int j = 0; j < t.shapes[1]; j++) {
+                sums = new double[t.shape[0]];
+                for (int i = 0; i < t.shape[0]; i++) {
+                    for (int j = 0; j < t.shape[1]; j++) {
                         sums[i] += t.getValue(i, j);
                     }
                 }
@@ -125,7 +125,7 @@ public class Utils {
     public static Tensor broadcastTo(Tensor t, int[] shapes) {
         int length = Utils.getLength(shapes);
         double[] values = new double[length];
-        int[] xShape = t.getShapes();
+        int[] xShape = t.getShape();
         int xShape0 = xShape[0];
         int xShape1 = xShape[1];
         int shape0 = shapes[0];
@@ -146,15 +146,15 @@ public class Utils {
     // 2つの Tensor を相互的にブロードキャストするサイズを求める
     // ※Tensorは四則演算の際などに自動的にブロードキャストが行われないため明示的にこの関数を利用する
     public static int[] broadcastShape(Tensor t0, Tensor t1) {
-        return broadcastShape(t0.shapes, t1.shapes);
+        return broadcastShape(t0.shape, t1.shape);
     }
 
     public static int[] broadcastShape(Tensor t0, int[] shapes1) {
-        return broadcastShape(t0.shapes, shapes1);
+        return broadcastShape(t0.shape, shapes1);
     }
 
     public static int[] broadcastShape(int[] shapes0, Tensor t1) {
-        return broadcastShape(shapes0, t1.shapes);
+        return broadcastShape(shapes0, t1.shape);
     }
 
 
@@ -191,7 +191,7 @@ public class Utils {
     // ChatGPTで修正
     public static Tensor sumTo(Tensor t, int[] shapes) {
         double[] values = new double[shapes[0] * shapes[1]];
-        int[] xShape = t.getShapes();
+        int[] xShape = t.getShape();
 
         switch (t.rank) {
             case 0:
@@ -256,7 +256,7 @@ public class Utils {
         } else if (indices.length == 1) {
             return t.values[indices[0]];
         } else if (indices.length == 2) {
-            return t.values[indices[0] * t.shapes[1] + indices[1]];
+            return t.values[indices[0] * t.shape[1] + indices[1]];
         } else {
             throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }
@@ -268,7 +268,7 @@ public class Utils {
         } else if (t.rank == 1) {
             t.values[indices[0]] = value;
         } else if (t.rank == 2) {
-            t.values[indices[0] * t.shapes[1] + indices[1]] = value;
+            t.values[indices[0] * t.shape[1] + indices[1]] = value;
         } else {
             throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }
@@ -285,7 +285,7 @@ public class Utils {
                 buffer.append("[");
                 for (int i = 0; i < t.values.length; i++) {
                     buffer.append(t.getValue(i));
-                    if (i == t.shapes[0] - 1) {
+                    if (i == t.shape[0] - 1) {
                         buffer.append("]");
                     } else {
                         buffer.append(", ");
@@ -294,22 +294,22 @@ public class Utils {
                 break;
             case 2:
                 buffer.append("[");
-                for (int i = 0; i < t.shapes[0]; i++) {
+                for (int i = 0; i < t.shape[0]; i++) {
                     if (i == 0) {
                         buffer.append("[");
                     } else {
                         buffer.append(" [");
                     }
-                    for (int j = 0; j < t.shapes[1]; j++) {
+                    for (int j = 0; j < t.shape[1]; j++) {
                         //buffer.append(t.values[n++]);
                         buffer.append(t.getValue(i, j));
-                        if (j == t.shapes[1] - 1) {
+                        if (j == t.shape[1] - 1) {
                             buffer.append("]");
                         } else {
                             buffer.append(", ");
                         }
                     }
-                    if (i == t.shapes[0] - 1) {
+                    if (i == t.shape[0] - 1) {
                         buffer.append("]");
                     } else {
                         buffer.append(",\n");

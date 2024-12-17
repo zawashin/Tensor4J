@@ -14,7 +14,7 @@ public class Tensor implements Cloneable, Serializable {
     private static final long serialVersionUID = -5871953224191632639L;
     public static int RANK_MAX = 2;
     protected int rank;
-    protected int[] shapes;
+    protected int[] shape;
     protected int length;
     protected double[] values;
 
@@ -40,31 +40,31 @@ public class Tensor implements Cloneable, Serializable {
 
     public Tensor(Tensor other) {
         rank = other.rank;
-        shapes = other.shapes.clone();
+        shape = other.shape.clone();
         length = other.length;
         values = other.values.clone();
     }
 
-    public Tensor(double[] values, int... shapes) {
-        if (shapes.length > RANK_MAX) {
+    public Tensor(double[] values, int... shape) {
+        if (shape.length > RANK_MAX) {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
-        this.rank = shapes.length;
-        this.shapes = shapes.clone();
-        this.length = Utils.getLength(shapes);
+        this.rank = shape.length;
+        this.shape = shape.clone();
+        this.length = Utils.getLength(shape);
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shapes.");
         }
         this.values = values.clone();
     }
 
-    public Tensor(int... shapes) {
-        this.shapes = shapes.clone();
-        rank = shapes.length;
+    public Tensor(int... shape) {
+        this.shape = shape.clone();
+        rank = shape.length;
         if (rank > RANK_MAX) {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
-        length = Utils.getLength(shapes);
+        length = Utils.getLength(shape);
         values = new double[length];
     }
 
@@ -76,12 +76,12 @@ public class Tensor implements Cloneable, Serializable {
         return length;
     }
 
-    public int[] getShapes() {
-        return shapes;
+    public int[] getShape() {
+        return shape;
     }
 
     public int getShape(int n) {
-        return shapes[n];
+        return shape[n];
     }
 
     public double[] getValues() {
@@ -96,7 +96,7 @@ public class Tensor implements Cloneable, Serializable {
             throw new RuntimeException(e);
         }
         clone.values = this.values.clone();
-        clone.shapes = this.shapes.clone();
+        clone.shape = this.shape.clone();
         return clone;
     }
 
@@ -264,57 +264,4 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.sumTo(this, shapes);
     }
 
-    public Tensor reshapeSumBackward(Tensor gy, int[] xshape, int axis) {
-        //    public static Variable reshapeSumBackward(Variable gy, int[] xShape, Object axis, boolean keepdims) {
-        int ndim = xshape.length;
-        int[] tupledAxis = null;
-
-        // Convert axis to array form
-        /*
-        if (axis == null) {
-            tupledAxis = null;
-        } else if (axis instanceof Integer) {
-            tupledAxis = new int[]{(Integer) axis};
-        } else if (axis instanceof int[]) {
-            tupledAxis = (int[]) axis;
-        } else {
-            throw new IllegalArgumentException("Axis must be null, Integer, or int[]");
-        }
-
-         */
-
-        int[] shapes;
-        if (!(ndim == 0 || tupledAxis == null)) {
-            // Convert negative indices to positive
-            int[] actualAxis = new int[tupledAxis.length];
-            for (int i = 0; i < tupledAxis.length; i++) {
-                actualAxis[i] = tupledAxis[i] >= 0 ? tupledAxis[i] : tupledAxis[i] + ndim;
-            }
-
-            // Sort axis indices
-            Arrays.sort(actualAxis);
-
-            // Convert gy shapes to list for easier manipulation
-            List<Integer> shapeList = new ArrayList<>();
-            for (int dim : gy.shapes) {
-                shapeList.add(dim);
-            }
-
-            // Insert 1's at the appropriate positions
-            for (int a : actualAxis) {
-                shapeList.add(a, 1);
-            }
-
-            // Convert back to array
-            shapes = new int[shapeList.size()];
-            for (int i = 0; i < shapeList.size(); i++) {
-                shapes[i] = shapeList.get(i);
-            }
-        } else {
-            shapes = gy.shapes;
-        }
-
-        // Reshape and return
-        return gy.reshape(shapes);
-    }
 }
