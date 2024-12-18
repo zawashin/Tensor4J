@@ -13,28 +13,28 @@ public class Utils {
             "Tensor Order is not 2nd.",
             "Over " + Tensor.RANK_MAX + " Order Tensor is not implemented.",
             "Data Length is not correct",
-            "Tensor shapes is not match",
+            "Tensor shape is not match",
     };
     public static final String ERROR_RANK = ERROR_MESSAGE[Tensor.RANK_MAX + 1];
     public static final String ERROR_LENGTH = ERROR_MESSAGE[Tensor.RANK_MAX + 2];
     public static final String ERROR_SHAPE = ERROR_MESSAGE[Tensor.RANK_MAX + 3];
 
-    public static Tensor create(int... shapes) {
-        return new Tensor(shapes);
+    public static Tensor create(int... shape) {
+        return new Tensor(shape);
     }
 
-    public static Tensor fill(double value, int... shapes) {
-        Tensor t = new Tensor(shapes);
+    public static Tensor fill(double value, int... shape) {
+        Tensor t = new Tensor(shape);
         Arrays.fill(t.values, value);
         return t;
     }
 
-    public static Tensor random(int... shapes) {
-        return random(1.0, shapes);
+    public static Tensor random(int... shape) {
+        return random(1.0, shape);
     }
 
-    public static Tensor random(double value, int... shapes) {
-        Tensor t = new Tensor(shapes);
+    public static Tensor random(double value, int... shape) {
+        Tensor t = new Tensor(shape);
         Random random = new Random(System.currentTimeMillis());
         for (int i = 0; i < t.length; i++) {
             t.values[i] = value * random.nextDouble();
@@ -42,8 +42,8 @@ public class Utils {
         return t;
     }
 
-    public static Tensor random(double valueMax, double valueMin, int... shapes) {
-        return random(valueMax - valueMin, shapes);
+    public static Tensor random(double valueMax, double valueMin, int... shape) {
+        return random(valueMax - valueMin, shape);
     }
 
     public static Tensor transpose(Tensor t, int... axes) {
@@ -73,12 +73,12 @@ public class Utils {
     }
 
 
-    public static Tensor reshape(Tensor t, int... shapes) {
-        int length = getLength(shapes);
+    public static Tensor reshape(Tensor t, int... shape) {
+        int length = getLength(shape);
         if (t.length != length) {
             throw new RuntimeException(Utils.ERROR_LENGTH);
         }
-        Tensor trs = new Tensor(shapes);
+        Tensor trs = new Tensor(shape);
         trs.values = t.values.clone();
         return trs;
     }
@@ -113,34 +113,70 @@ public class Utils {
                     }
                 }
             } else {
-                sums = new double[1];
+                double sum = 0.0;
                 for (int i = 0; i < t.getLength(); i++) {
-                    sums[0] += t.getValues()[i];
+                    sum += t.getValues()[i];
                 }
-                return new Tensor(sums[0]);
+                return new Tensor(sum);
             }
         }
         return new Tensor(sums);
     }
-    public static Tensor broadcastTo(Tensor t, int[] shapes) {
-        int length = Utils.getLength(shapes);
+
+    public static Tensor broadcastTo(Tensor t, int[] shape) {
+        return broadcastTo(t, shape, false);
+    }
+
+    public static Tensor broadcastTo(Tensor t, int[] shape, boolean validate) {
+        int[] shape_ = shape.clone();
+        if (validate) {
+            shape_ = broadcastShape(t.shape, shape);
+        }
+        int length = Utils.getLength(shape);
         double[] values = new double[length];
         int[] xShape = t.getShape();
-        int xShape0 = xShape[0];
-        int xShape1 = xShape[1];
-        int shape0 = shapes[0];
-        int shape1 = shapes[1];
+        int xShape0 = 1;
+        int xShape1 = 1;
+        int shape0 = 1;
+        int shape1 = 1;
+        switch (t.rank) {
+            case 0:
+                break;
+            case 1:
+                xShape1 = xShape[0];
+                break;
+            case 2:
+                xShape0 = xShape[0];
+                xShape1 = xShape[1];
+                break;
+            default:
+                System.err.println(ERROR_RANK);
+                throw new RuntimeException(ERROR_RANK);
+        }
+        switch (shape.length) {
+            case 0:
+                break;
+            case 1:
+                shape1 = shape_[0];
+                break;
+            case 2:
+                shape0 = shape_[0];
+                shape1 = shape_[1];
+                break;
+            default:
+                System.err.println(ERROR_RANK);
+                throw new RuntimeException(ERROR_RANK);
+        }
 
         int n = 0;
         for (int i = 0; i < shape0; i++) {
             for (int j = 0; j < shape1; j++) {
-                int i_ = (xShape0 == 1 || xShape0 == shape0) ? Math.min(i, xShape0 - 1) : i % xShape0;
-                int j_ = (xShape1 == 1 || xShape1 == shape1) ? Math.min(j, xShape1 - 1) : j % xShape1;
-                int[] indices_;
-                values[n++] = t.getValue(i_, j_);
+                int i_ = i % xShape0;
+                int j_ = j % xShape1;
+                values[n++] = t.getValues()[i_ * xShape1 + j_];
             }
         }
-        return new Tensor(values, shapes);
+        return new Tensor(values, shape);
     }
 
     // 2つの Tensor を相互的にブロードキャストするサイズを求める
@@ -149,86 +185,90 @@ public class Utils {
         return broadcastShape(t0.shape, t1.shape);
     }
 
-    public static int[] broadcastShape(Tensor t0, int[] shapes1) {
-        return broadcastShape(t0.shape, shapes1);
+    public static int[] broadcastShape(Tensor t0, int[] shape1) {
+        return broadcastShape(t0.shape, shape1);
     }
 
-    public static int[] broadcastShape(int[] shapes0, Tensor t1) {
-        return broadcastShape(shapes0, t1.shape);
+    public static int[] broadcastShape(int[] shape0, Tensor t1) {
+        return broadcastShape(shape0, t1.shape);
     }
 
 
-    public static int[] broadcastShape(int[] shapes0, int[] shapes1) {
+    public static int[] broadcastShape(int[] shape0, int[] shape1) {
         // 最大の次元数を取得
-        int maxLength = Math.max(shapes0.length, shapes1.length);
+        int length = Math.max(shape0.length, shape1.length);
 
         // 結果の形状を格納する配列
-        int[] castShape = new int[maxLength];
+        int[] shape = new int[length];
 
         // shapeA と shapeB を後ろ合わせにするためのオフセットを計算
-        int offset0 = maxLength - shapes0.length;
-        int offset1 = maxLength - shapes1.length;
+        int offset0 = length - shape0.length;
+        int offset1 = length - shape1.length;
 
         // 次元ごとにブロードキャストの判定
-        for (int i = maxLength - 1; i >= 0; i--) {
-            int dim0 = (i - offset0 >= 0) ? shapes0[i - offset0] : 1;
-            int dim1 = (i - offset1 >= 0) ? shapes1[i - offset1] : 1;
+        for (int i = length - 1; i >= 0; i--) {
+            int s0 = (i - offset0 >= 0) ? shape0[i - offset0] : 1;
+            int s1 = (i - offset1 >= 0) ? shape1[i - offset1] : 1;
 
-            if (dim0 == dim1 || dim0 == 1 || dim1 == 1) {
+            if (s0 == s1 || s0 == 1 || s1 == 1) {
                 // ブロードキャスト可能な次元を選択
-                castShape[i] = Math.max(dim0, dim1);
+                shape[i] = Math.max(s0, s1);
             } else {
                 // ブロードキャスト不可能な場合
-                throw new RuntimeException("Shapes " + Arrays.toString(shapes0) +
-                        " and " + Arrays.toString(shapes1) +
+                System.err.println("Shapes " + Arrays.toString(shape0) +
+                        " and " + Arrays.toString(shape1) +
                         " are not broadcastable.");
+                return null;
             }
         }
 
-        return castShape;
+        return shape;
     }
 
     // ChatGPTで修正
-    public static Tensor sumTo(Tensor t, int[] shapes) {
-        double[] values = new double[shapes[0] * shapes[1]];
+    public static Tensor sumTo(Tensor t, int[] shape) {
+        double[] values = new double[shape[0] * shape[1]];
         int[] xShape = t.getShape();
 
         switch (t.rank) {
             case 0:
+                switch (shape.length) {
+
+                }
             case 1:
                 break;
             case 2:
                 for (int i = 0; i < xShape[0]; i++) {
                     for (int j = 0; j < xShape[0]; j++) {
-                        int i_ = (shapes[0] == 1 || shapes[0] == xShape[0]) ? Math.min(i, shapes[0] - 1) : i % shapes[0];
-                        int j_ = (shapes[1] == 1 || shapes[1] == xShape[1]) ? Math.min(j, shapes[1] - 1) : j % shapes[1];
-                        values[i_ * shapes[1] + j_] += t.getValue(i, j);
+                        int i_ = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
+                        int j_ = (shape[1] == 1 || shape[1] == xShape[1]) ? Math.min(j, shape[1] - 1) : j % shape[1];
+                        values[i_ * shape[1] + j_] += t.getValue(i, j);
                     }
                 }
                 break;
             default:
                 throw new RuntimeException(ERROR_RANK);
         }
-        return new Tensor(values, shapes);
+        return new Tensor(values, shape);
     }
 
-    public static int getLength(int... shapes) {
+    public static int getLength(int... shape) {
         int length = 1;
-        for (int shape : shapes) {
-            length *= shape;
+        for (int n : shape) {
+            length *= n;
         }
         return length;
     }
 
-    public static int[] getIndices(int[] shapes, int index) {
-        int[] indices = new int[shapes.length];
-        for (int i = 0; i < shapes.length; i++) {
+    public static int[] getIndices(int[] shape, int index) {
+        int[] indices = new int[shape.length];
+        for (int i = 0; i < shape.length; i++) {
             switch (i) {
                 case 0:
-                    indices[0] = index / shapes[1];
+                    indices[0] = index / shape[1];
                     break;
                 case 1:
-                    indices[1] = index % shapes[1];
+                    indices[1] = index % shape[1];
                     break;
                 default:
                     throw new RuntimeException(ERROR_RANK);
@@ -237,17 +277,13 @@ public class Utils {
         return indices;
     }
 
-    public static int getIndex(int[] shapes, int... indices) {
-        switch (shapes.length) {
-            case 0:
-                return 0;
-            case 1:
-                return indices[0];
-            case 2:
-                return indices[0] * shapes[1] + indices[1];
-            default:
-                throw new RuntimeException(ERROR_RANK);
-        }
+    public static int getIndex(int[] shape, int... indices) {
+        return switch (shape.length) {
+            case 0 -> 0;
+            case 1 -> indices[0];
+            case 2 -> indices[0] * shape[1] + indices[1];
+            default -> throw new RuntimeException(ERROR_RANK);
+        };
     }
 
     public static double getValue(Tensor t, int... indices) {

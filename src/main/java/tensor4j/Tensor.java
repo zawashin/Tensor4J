@@ -53,7 +53,7 @@ public class Tensor implements Cloneable, Serializable {
         this.shape = shape.clone();
         this.length = Utils.getLength(shape);
         if (values.length != this.length) {
-            throw new IllegalArgumentException("Values array length does not match tensor shapes.");
+            throw new IllegalArgumentException("Values array length does not match tensor shape.");
         }
         this.values = values.clone();
     }
@@ -244,8 +244,8 @@ public class Tensor implements Cloneable, Serializable {
         return Operators.mse(this, t);
     }
 
-    public Tensor reshape(int[] shapes) {
-        return Utils.reshape(this, shapes);
+    public Tensor reshape(int[] shape) {
+        return Utils.reshape(this, shape);
     }
 
     public Tensor sum() {
@@ -256,12 +256,12 @@ public class Tensor implements Cloneable, Serializable {
         return Utils.sum(this, axis);
     }
 
-    public Tensor broadcastTo(int[] shapes) {
-        return Utils.broadcastTo(this, shapes);
+    public Tensor broadcastTo(int[] shape) {
+        return Utils.broadcastTo(this, shape);
     }
 
-    public Tensor sumTo(int[] shapes) {
-        return Utils.sumTo(this, shapes);
+    public Tensor sumTo(int[] shape) {
+        return Utils.sumTo(this, shape);
     }
 
 }

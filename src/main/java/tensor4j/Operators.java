@@ -209,7 +209,7 @@ public class Operators {
     }
 
     public static Tensor dot(Tensor t0, Tensor t1) {
-        int[] shapes = null;
+        int[] shape = null;
         int length;
         double[] values = null;
         switch (t0.rank) {
@@ -220,7 +220,7 @@ public class Operators {
                     case 0:
                         return Operators.multiply(t0, t1.values[0]);
                     case 1:
-                        shapes = new int[0];
+                        shape = new int[0];
                         values = new double[1];
                         for (int i = 0; i < t0.shape[0]; i++) {
                             values[0] += t0.getValue(i) * t1.getValue(i);
@@ -232,7 +232,7 @@ public class Operators {
                             System.out.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
-                        shapes = new int[]{t1.shape[1]};
+                        shape = new int[]{t1.shape[1]};
                         values = new double[t1.shape[1]];
 
                         // t0とt1の行ごとのドット積を計算
@@ -258,7 +258,7 @@ public class Operators {
                             System.out.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
-                        shapes = new int[]{t0.shape[0]};
+                        shape = new int[]{t0.shape[0]};
                         values = new double[t0.shape[0]];
                         for (int i = 0; i < t0.shape[0]; i++) {
                             double value = 0.0;
@@ -275,7 +275,7 @@ public class Operators {
                             throw new RuntimeException("Tensor Shape Error");
                         }
                         length = t0.getShape(0) * t1.getShape(1);
-                        shapes = new int[]{t0.shape[0], t1.shape[1]};
+                        shape = new int[]{t0.shape[0], t1.shape[1]};
                         values = new double[length];
 
                         // 行列積を計算
@@ -285,7 +285,7 @@ public class Operators {
                                 for (int k = 0; k < t0.shape[1]; k++) {
                                     value += t0.getValue(i, k) * t1.getValue(k, j);
                                 }
-                                values[i * shapes[1] + j] = value;
+                                values[i * shape[1] + j] = value;
                             }
                         }
                         break;
@@ -296,7 +296,7 @@ public class Operators {
             default:
                 throw new RuntimeException(Utils.ERROR_SHAPE);
         }
-        return new Tensor(values, shapes);
+        return new Tensor(values, shape);
     }
 
     public static Tensor mse(Tensor t0, Tensor t1) {
