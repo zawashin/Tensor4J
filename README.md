@@ -5,7 +5,8 @@
   」のフレームワーク[DezeroをJavaで実装](https://github.com/zawashin/DeZero4j/tree/main)するためにNumPyの代用として実装してみる。
 
 ### 方針
-- 深層学習で必要な2階までしか実装していない
+
+- 深層学習で必要な2階までしか実装しない
 
 ## 現状
   - 四則演算、数学関数
@@ -13,5 +14,3 @@
   - その他の操作
     - Utilsクラス
 
-## 参考資料
-- [Deepnetts Community Edition](https://github.com/deepnetts/deepnetts-communityedition) 

@@ -131,6 +131,9 @@ public class Utils {
         int[] shape_ = shape.clone();
         if (validate) {
             shape_ = broadcastShape(t.shape, shape);
+            if (shape_ == null) {
+                return null;
+            }
         }
         int length = Utils.getLength(shape);
         double[] values = new double[length];
@@ -227,27 +230,54 @@ public class Utils {
 
     // ChatGPTで修正
     public static Tensor sumTo(Tensor t, int[] shape) {
-        double[] values = new double[shape[0] * shape[1]];
-        int[] xShape = t.getShape();
+        // 縮小後の配列を作成
+        double[] values = new double[getLength(shape)];
+        int xShape0 = 1;
+        int xShape1 = 1;
 
+        // 元の配列のサイズ
         switch (t.rank) {
             case 0:
-                switch (shape.length) {
-
-                }
+                break;
             case 1:
+                xShape1 = t.getShape()[0];
                 break;
             case 2:
-                for (int i = 0; i < xShape[0]; i++) {
-                    for (int j = 0; j < xShape[0]; j++) {
-                        int i_ = (shape[0] == 1 || shape[0] == xShape[0]) ? Math.min(i, shape[0] - 1) : i % shape[0];
-                        int j_ = (shape[1] == 1 || shape[1] == xShape[1]) ? Math.min(j, shape[1] - 1) : j % shape[1];
-                        values[i_ * shape[1] + j_] += t.getValue(i, j);
-                    }
-                }
+                xShape0 = t.getShape()[0];
+                xShape1 = t.getShape()[1];
                 break;
             default:
+                System.err.println(ERROR_RANK);
                 throw new RuntimeException(ERROR_RANK);
+        }
+        // ターゲットの形状
+        int shape0 = 1;
+        int shape1 = 1;
+        switch (shape.length) {
+            case 0:
+                break;
+            case 1:
+                shape1 = shape[0];
+                break;
+            case 2:
+                shape0 = shape[0];
+                shape1 = shape[1];
+                break;
+            default:
+                System.err.println(ERROR_RANK);
+                throw new RuntimeException(ERROR_RANK);
+        }
+
+        // 累積和の計算
+        for (int i = 0; i < xShape0; i++) {
+            for (int j = 0; j < xShape1; j++) {
+                // 対応するターゲットのインデックス
+                int i_ = i % shape0;
+                int j_ = j % shape1;
+
+                // 結果配列に加算
+                values[i_ * shape1 + j_] += t.getValues()[i * xShape1 + j];
+            }
         }
         return new Tensor(values, shape);
     }
@@ -308,6 +338,19 @@ public class Utils {
         } else {
             throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
         }
+    }
+
+    public static boolean compareShape(Tensor t0, Tensor t1) {
+        return Arrays.equals(t0.shape, t1.shape);
+    }
+
+    public static Tensor caseDifferentShape(Tensor t0, Tensor t1) {
+        if (!compareShape(t0, t1)) {
+            System.err.print(Arrays.toString(t0.shape));
+            System.err.print(Arrays.toString(t1.shape));
+            System.err.println("Tensor Shape Error");
+        }
+        return null;
     }
 
     public static String toString(Tensor t) {
