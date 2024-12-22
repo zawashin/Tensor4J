@@ -228,8 +228,8 @@ public class Operators {
                         break;
                     case 2:
                         if (t0.shape[0] != t1.shape[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.err.print(Arrays.toString(t0.getShape()));
+                            System.err.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
                         shape = new int[]{t1.shape[1]};
@@ -254,8 +254,8 @@ public class Operators {
                         return Operators.multiply(t0, t1.values[0]);
                     case 1:
                         if (t0.shape[1] != t1.shape[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.err.print(Arrays.toString(t0.getShape()));
+                            System.err.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException(Utils.ERROR_SHAPE);
                         }
                         shape = new int[]{t0.shape[0]};
@@ -270,8 +270,8 @@ public class Operators {
                         break;
                     case 2:
                         if (t0.shape[1] != t1.shape[0]) {
-                            System.out.print(Arrays.toString(t0.getShape()));
-                            System.out.print(Arrays.toString(t1.getShape()));
+                            System.err.print(Arrays.toString(t0.getShape()));
+                            System.err.print(Arrays.toString(t1.getShape()));
                             throw new RuntimeException("Tensor Shape Error");
                         }
                         length = t0.getShape(0) * t1.getShape(1);
@@ -301,8 +301,8 @@ public class Operators {
 
     public static Tensor mse(Tensor t0, Tensor t1) {
         if (t0.length != t1.length) {
-            System.out.print(Arrays.toString(t0.shape));
-            System.out.print(Arrays.toString(t1.shape));
+            System.err.print(Arrays.toString(t0.shape));
+            System.err.print(Arrays.toString(t1.shape));
             throw new RuntimeException("Tensor Shape Error");
         }
         int length = t0.length;

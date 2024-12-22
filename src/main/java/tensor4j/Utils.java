@@ -353,6 +353,14 @@ public class Utils {
         return null;
     }
 
+    public static Tensor sortByAscending(int axis) {
+        return null;
+    }
+
+    public static Tensor sort(int column) {
+        return null;
+    }
+
     public static String toString(Tensor t) {
         StringBuilder buffer = new StringBuilder();
         int n = 0;
