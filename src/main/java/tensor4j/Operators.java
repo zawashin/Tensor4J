@@ -27,7 +27,7 @@ public class Operators {
     }
 
     public static void addAssign(Tensor t0, Tensor t1) {
-        if (!Arrays.equals(t0.shape, t1.shape)) {
+        if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
             throw new RuntimeException(Utils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {
@@ -62,8 +62,11 @@ public class Operators {
 
     public static void subtractAssign(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
+            System.err.println(Arrays.toString(t0.shape));
+            System.err.println(Arrays.toString(t1.shape));
             throw new RuntimeException(Utils.ERROR_SHAPE);
         }
+
         for (int i = 0; i < t0.length; i++) {
             t0.values[i] -= t1.values[i];
         }
@@ -96,7 +99,7 @@ public class Operators {
     }
 
     public static void multiplyAssign(Tensor t0, Tensor t1) {
-        if (!Arrays.equals(t0.shape, t1.shape)) {
+        if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
             throw new RuntimeException(Utils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {
@@ -130,7 +133,7 @@ public class Operators {
     }
 
     public static void divideAssign(Tensor t0, Tensor t1) {
-        if (!Arrays.equals(t0.shape, t1.shape)) {
+        if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
             throw new RuntimeException(Utils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {

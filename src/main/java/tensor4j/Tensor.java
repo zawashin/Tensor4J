@@ -84,6 +84,10 @@ public class Tensor implements Cloneable, Serializable {
         return shape[n];
     }
 
+    public void setShape(int[] shape) {
+        this.shape = shape;
+    }
+
     public double[] getValues() {
         return values;
     }

@@ -46,29 +46,6 @@ public class Utils {
         return random(valueMax - valueMin, shape);
     }
 
-    public static Tensor transpose(Tensor t, boolean fake) {
-        Tensor tr = t.transpose();
-        if (fake) {
-            switch (t.rank) {
-                case 0:
-                    break;
-                case 1:
-                    // 数学的には存在しない
-                    tr.rank = 2;
-                    tr.shape = new int[]{1, tr.length};
-                    break;
-                case 2:
-                    tr.rank = 1;
-                    tr.shape = new int[]{tr.length};
-                    break;
-                default:
-                    throw new RuntimeException(Utils.ERROR_RANK);
-            }
-        }
-        return tr;
-    }
-
-
     public static Tensor transpose(Tensor t) {
         Tensor tr = null;
         switch (t.rank) {
