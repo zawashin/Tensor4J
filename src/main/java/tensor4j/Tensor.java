@@ -2,9 +2,6 @@ package tensor4j;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
@@ -17,6 +14,7 @@ public class Tensor implements Cloneable, Serializable {
     protected int[] shape;
     protected int length;
     protected double[] values;
+    private int[] multipliers; // 各次元の積
 
     public Tensor(double value) {
         this();
@@ -43,6 +41,7 @@ public class Tensor implements Cloneable, Serializable {
         shape = other.shape.clone();
         length = other.length;
         values = other.values.clone();
+        multipliers = other.multipliers.clone();
     }
 
     public Tensor(double[] values, int... shape) {
@@ -51,7 +50,14 @@ public class Tensor implements Cloneable, Serializable {
         }
         this.rank = shape.length;
         this.shape = shape.clone();
-        this.length = Utils.getLength(shape);
+        length = 1;
+        multipliers = new int[shape.length];
+
+        // インデックス計算用の係数を計算
+        for (int i = shape.length - 1; i >= 0; i--) {
+            multipliers[i] = length;
+            length *= shape[i];
+        }
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shape.");
         }
@@ -64,7 +70,14 @@ public class Tensor implements Cloneable, Serializable {
         if (rank > RANK_MAX) {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
-        length = Utils.getLength(shape);
+        length = 1;
+        multipliers = new int[shape.length];
+
+        // インデックス計算用の係数を計算
+        for (int i = shape.length - 1; i >= 0; i--) {
+            multipliers[i] = length;
+            length *= shape[i];
+        }
         values = new double[length];
     }
 
@@ -104,36 +117,26 @@ public class Tensor implements Cloneable, Serializable {
         return clone;
     }
 
-    public double getValue(int... indices) {
-        return Utils.getValue(this, indices);
+    // 任意次元のインデックスを1次元インデックスに変換
+    private int index(int... indices) {
+        if (indices.length != shape.length) {
+            throw new IllegalArgumentException("次元の数が一致しません。");
+        }
+        int idx = 0;
+        for (int i = 0; i < indices.length; i++) {
+            idx += indices[i] * multipliers[i];
+        }
+        return idx;
     }
 
-    public double getValue() {
-        return Utils.getValue(this);
-    }
-
-    public double getValue(int i) {
-        return Utils.getValue(this, i);
-    }
-
-    public double getValue(int i, int j) {
-        return Utils.getValue(this, i, j);
-    }
-
-    public void setValue(double value) {
-        Utils.setValue(this, value);
-    }
-
+    // 値を設定
     public void setValue(double value, int... indices) {
-        Utils.setValue(this, value, indices);
+        values[index(indices)] = value;
     }
 
-    public void setValue(double value, int i) {
-        Utils.setValue(this, value, i);
-    }
-
-    public void setValue(double value, int i, int j) {
-        Utils.setValue(this, value, i, j);
+    // 値を取得
+    public double getValue(int... indices) {
+        return values[index(indices)];
     }
 
     public String toString() {

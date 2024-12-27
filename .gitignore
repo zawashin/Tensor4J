@@ -44,5 +44,6 @@ build/
 ./テンソルのドット積.md
 ./.gitignore
 /src/main/java/tensor4j/*2.java
+/src/main/java/tensor4j/MultiDimArray.java
 /src/main/java/tensor4j/FileIO/
 /src/test/java/tensor4j/

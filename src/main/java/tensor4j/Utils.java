@@ -303,27 +303,6 @@ public class Utils {
         return indices;
     }
 
-    public static int getIndex(int[] shape, int... indices) {
-        return switch (shape.length) {
-            case 0 -> 0;
-            case 1 -> indices[0];
-            case 2 -> indices[0] * shape[1] + indices[1];
-            default -> throw new RuntimeException(ERROR_RANK);
-        };
-    }
-
-    public static double getValue(Tensor t, int... indices) {
-        if (indices.length == 0) {
-            return t.values[0];
-        } else if (indices.length == 1) {
-            return t.values[indices[0]];
-        } else if (indices.length == 2) {
-            return t.values[indices[0] * t.shape[1] + indices[1]];
-        } else {
-            throw new RuntimeException(ERROR_RANK + ": rank is " + t.rank);
-        }
-    }
-
     public static void setValue(Tensor t, double value, int... indices) {
         if (t.rank == 0) {
             t.values[0] = value;
