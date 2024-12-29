@@ -45,18 +45,9 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public Tensor(double[] values, int... shape) {
+        this(shape);
         if (shape.length > RANK_MAX) {
             throw new RuntimeException(Utils.ERROR_RANK);
-        }
-        this.rank = shape.length;
-        this.shape = shape.clone();
-        length = 1;
-        multipliers = new int[shape.length];
-
-        // インデックス計算用の係数を計算
-        for (int i = shape.length - 1; i >= 0; i--) {
-            multipliers[i] = length;
-            length *= shape[i];
         }
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shape.");
@@ -114,6 +105,7 @@ public class Tensor implements Cloneable, Serializable {
         }
         clone.values = this.values.clone();
         clone.shape = this.shape.clone();
+        clone.multipliers = this.multipliers.clone();
         return clone;
     }
 
