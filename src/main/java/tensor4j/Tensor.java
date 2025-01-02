@@ -2,16 +2,19 @@ package tensor4j;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
  */
 public class Tensor implements Cloneable, Serializable {
+
     @Serial
     private static final long serialVersionUID = -5871953224191632639L;
     public static int RANK_MAX = 2;
     protected int rank;
     protected int[] shape;
+    protected int[] shape_;
     protected int length;
     protected double[] values;
     private int[] multipliers; // 各次元の積
@@ -62,12 +65,15 @@ public class Tensor implements Cloneable, Serializable {
             throw new RuntimeException(Utils.ERROR_RANK);
         }
         length = 1;
+        shape_ = new int[RANK_MAX];
+        Arrays.fill(shape_, 1);
         multipliers = new int[shape.length];
 
         // インデックス計算用の係数を計算
         for (int i = shape.length - 1; i >= 0; i--) {
             multipliers[i] = length;
             length *= shape[i];
+            shape_[i] = shape[i];
         }
         values = new double[length];
     }
