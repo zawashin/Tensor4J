@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
  */
-public class Utils {
+public class TensorUtils {
     public static final String[] ERROR_MESSAGES = new String[]{
             "Tensor Order is not 0th.",
             "Tensor Order is not 1st.",
@@ -56,7 +56,7 @@ public class Utils {
                 tr = t.clone();
                 break;
             case 2:
-                tr = Utils.create(t.shape[1], t.shape[0]);
+                tr = TensorUtils.create(t.shape[1], t.shape[0]);
                 for (int i = 0; i < t.shape[0]; i++) {
                     for (int j = 0; j < t.shape[1]; j++) {
                         tr.setValue(t.getValue(i, j), j, i);
@@ -64,7 +64,7 @@ public class Utils {
                 }
                 break;
             default:
-                throw new RuntimeException(Utils.ERROR_RANK);
+                throw new RuntimeException(TensorUtils.ERROR_RANK);
         }
         return tr;
     }
@@ -73,7 +73,7 @@ public class Utils {
     public static Tensor reshape(Tensor t, int... shape) {
         int length = getLength(shape);
         if (t.length != length) {
-            throw new RuntimeException(Utils.ERROR_LENGTH);
+            throw new RuntimeException(TensorUtils.ERROR_LENGTH);
         }
         Tensor trs = new Tensor(shape);
         trs.values = t.values.clone();
@@ -132,7 +132,7 @@ public class Utils {
                 return null;
             }
         }
-        int length = Utils.getLength(shape);
+        int length = TensorUtils.getLength(shape);
         double[] values = new double[length];
         int[] xShape = t.getShape();
         int xShape0 = 1;

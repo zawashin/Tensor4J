@@ -50,7 +50,7 @@ public class Tensor implements Cloneable, Serializable {
     public Tensor(double[] values, int... shape) {
         this(shape);
         if (shape.length > RANK_MAX) {
-            throw new RuntimeException(Utils.ERROR_RANK);
+            throw new RuntimeException(TensorUtils.ERROR_RANK);
         }
         if (values.length != this.length) {
             throw new IllegalArgumentException("Values array length does not match tensor shape.");
@@ -62,7 +62,7 @@ public class Tensor implements Cloneable, Serializable {
         this.shape = shape.clone();
         rank = shape.length;
         if (rank > RANK_MAX) {
-            throw new RuntimeException(Utils.ERROR_RANK);
+            throw new RuntimeException(TensorUtils.ERROR_RANK);
         }
         length = 1;
         shape_ = new int[RANK_MAX];
@@ -138,135 +138,135 @@ public class Tensor implements Cloneable, Serializable {
     }
 
     public String toString() {
-        return Utils.toString(this);
+        return TensorUtils.toString(this);
     }
 
     public Tensor add(Tensor t) {
-        return Operators.add(this, t);
+        return TensorOperators.add(this, t);
     }
 
     public Tensor add(double d) {
-        return Operators.add(this, d);
+        return TensorOperators.add(this, d);
     }
 
     public void addAssign(Tensor t) {
-        Operators.addAssign(this, t);
+        TensorOperators.addAssign(this, t);
     }
 
     public void addAssign(double d) {
-        Operators.addAssign(this, d);
+        TensorOperators.addAssign(this, d);
     }
 
     public Tensor subtract(Tensor d) {
-        return Operators.subtract(this, d);
+        return TensorOperators.subtract(this, d);
     }
 
     public Tensor subtract(double t) {
-        return Operators.subtract(this, t);
+        return TensorOperators.subtract(this, t);
     }
 
     public void subtractAssign(Tensor d) {
-        Operators.subtractAssign(this, d);
+        TensorOperators.subtractAssign(this, d);
     }
 
     public void subtractAssign(double t) {
-        Operators.subtractAssign(this, t);
+        TensorOperators.subtractAssign(this, t);
     }
 
     public Tensor multiply(Tensor t) {
-        return Operators.multiply(this, t);
+        return TensorOperators.multiply(this, t);
     }
 
     public Tensor multiply(double d) {
-        return Operators.multiply(this, d);
+        return TensorOperators.multiply(this, d);
     }
 
     public void multiplyAssign(Tensor d) {
-        Operators.multiplyAssign(this, d);
+        TensorOperators.multiplyAssign(this, d);
     }
 
     public void multiplyAssign(double t) {
-        Operators.multiplyAssign(this, t);
+        TensorOperators.multiplyAssign(this, t);
     }
 
     public Tensor divide(Tensor t) {
-        return Operators.divide(this, t);
+        return TensorOperators.divide(this, t);
     }
 
     public Tensor divide(double d) {
-        return Operators.divide(this, d);
+        return TensorOperators.divide(this, d);
     }
 
     public void divideAssign(Tensor d) {
-        Operators.divideAssign(this, d);
+        TensorOperators.divideAssign(this, d);
     }
 
     public void divideAssign(double t) {
-        Operators.divideAssign(this, t);
+        TensorOperators.divideAssign(this, t);
     }
 
     public Tensor neg() {
-        return Operators.neg(this);
+        return TensorOperators.neg(this);
     }
 
     public Tensor cos() {
-        return Operators.cos(this);
+        return TensorOperators.cos(this);
     }
 
     public Tensor sin() {
-        return Operators.sin(this);
+        return TensorOperators.sin(this);
     }
 
     public Tensor tanh() {
-        return Operators.tanh(this);
+        return TensorOperators.tanh(this);
     }
 
     public Tensor exp() {
-        return Operators.exp(this);
+        return TensorOperators.exp(this);
     }
 
     public Tensor log() {
-        return Operators.log(this);
+        return TensorOperators.log(this);
     }
 
     public Tensor pow(double index) {
-        return Operators.pow(this, index);
+        return TensorOperators.pow(this, index);
     }
 
     public Tensor square() {
-        return Operators.square(this);
+        return TensorOperators.square(this);
     }
 
     public Tensor transpose() {
-        return Utils.transpose(this);
+        return TensorUtils.transpose(this);
     }
 
     public Tensor dot(Tensor t) {
-        return Operators.dot(this, t);
+        return TensorOperators.dot(this, t);
     }
 
     public Tensor mse(Tensor t) {
-        return Operators.mse(this, t);
+        return TensorOperators.mse(this, t);
     }
 
     public Tensor reshape(int[] shape) {
-        return Utils.reshape(this, shape);
+        return TensorUtils.reshape(this, shape);
     }
 
     public Tensor sum() {
-        return Utils.sum(this, -1);
+        return TensorUtils.sum(this, -1);
     }
 
     public Tensor sum(int axis) {
-        return Utils.sum(this, axis);
+        return TensorUtils.sum(this, axis);
     }
 
     public Tensor broadcastTo(int[] shape) {
-        return Utils.broadcastTo(this, shape);
+        return TensorUtils.broadcastTo(this, shape);
     }
 
     public Tensor sumTo(int[] shape) {
-        return Utils.sumTo(this, shape);
+        return TensorUtils.sumTo(this, shape);
     }
 
 }

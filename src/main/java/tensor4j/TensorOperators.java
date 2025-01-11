@@ -5,11 +5,11 @@ import java.util.Arrays;
 /**
  * @author Shin-Ichiro Serizawa <zawashin@outlook.com>
  */
-public class Operators {
+public class TensorOperators {
 
     public static Tensor add(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         double[] values = new double[t0.length];
         for (int i = 0; i < t0.length; i++) {
@@ -28,7 +28,7 @@ public class Operators {
 
     public static void addAssign(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {
             t0.values[i] += t1.values[i];
@@ -43,7 +43,7 @@ public class Operators {
 
     public static Tensor subtract(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         double[] values = new double[t0.length];
         for (int i = 0; i < t0.length; i++) {
@@ -64,7 +64,7 @@ public class Operators {
         if (!Arrays.equals(t0.shape, t1.shape)) {
             System.err.println(Arrays.toString(t0.shape));
             System.err.println(Arrays.toString(t1.shape));
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
 
         for (int i = 0; i < t0.length; i++) {
@@ -81,7 +81,7 @@ public class Operators {
 
     public static Tensor multiply(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         double[] values = new double[t0.length];
         for (int i = 0; i < t0.length; i++) {
@@ -100,7 +100,7 @@ public class Operators {
 
     public static void multiplyAssign(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {
             t0.values[i] *= t1.values[i];
@@ -115,7 +115,7 @@ public class Operators {
 
     public static Tensor divide(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         double[] values = new double[t0.length];
         for (int i = 0; i < t0.length; i++) {
@@ -134,7 +134,7 @@ public class Operators {
 
     public static void divideAssign(Tensor t0, Tensor t1) {
         if (!Arrays.equals(t0.shape, t1.shape) && (t1.getRank() > 2 && t0.getRank() > 2)) {
-            throw new RuntimeException(Utils.ERROR_SHAPE);
+            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         for (int i = 0; i < t0.length; i++) {
             t0.values[i] /= t1.values[i];
@@ -217,11 +217,11 @@ public class Operators {
         double[] values = null;
         switch (t0.rank) {
             case 0:
-                return Operators.multiply(t1, t0.values[0]);
+                return TensorOperators.multiply(t1, t0.values[0]);
             case 1:
                 switch (t1.rank) {
                     case 0:
-                        return Operators.multiply(t0, t1.values[0]);
+                        return TensorOperators.multiply(t0, t1.values[0]);
                     case 1:
                         shape = new int[0];
                         values = new double[1];
@@ -233,7 +233,7 @@ public class Operators {
                         if (t0.shape[0] != t1.shape[0]) {
                             System.err.print(Arrays.toString(t0.getShape()));
                             System.err.print(Arrays.toString(t1.getShape()));
-                            throw new RuntimeException(Utils.ERROR_SHAPE);
+                            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
                         }
                         shape = new int[]{t1.shape[1]};
                         values = new double[t1.shape[1]];
@@ -248,18 +248,18 @@ public class Operators {
                         }
                         break;
                     default:
-                        throw new RuntimeException(Utils.ERROR_SHAPE);
+                        throw new RuntimeException(TensorUtils.ERROR_SHAPE);
                 }
                 break;
             case 2:
                 switch (t1.rank) {
                     case 0:
-                        return Operators.multiply(t0, t1.values[0]);
+                        return TensorOperators.multiply(t0, t1.values[0]);
                     case 1:
                         if (t0.shape[1] != t1.shape[0]) {
                             System.err.print(Arrays.toString(t0.getShape()));
                             System.err.print(Arrays.toString(t1.getShape()));
-                            throw new RuntimeException(Utils.ERROR_SHAPE);
+                            throw new RuntimeException(TensorUtils.ERROR_SHAPE);
                         }
                         shape = new int[]{t0.shape[0]};
                         values = new double[t0.shape[0]];
@@ -293,11 +293,11 @@ public class Operators {
                         }
                         break;
                     default:
-                        throw new RuntimeException(Utils.ERROR_RANK);
+                        throw new RuntimeException(TensorUtils.ERROR_RANK);
                 }
                 break;
             default:
-                throw new RuntimeException(Utils.ERROR_SHAPE);
+                throw new RuntimeException(TensorUtils.ERROR_SHAPE);
         }
         return new Tensor(values, shape);
     }
